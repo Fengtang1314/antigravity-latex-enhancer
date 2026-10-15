@@ -1,14 +1,16 @@
 /**
  * ==============================================================================
- * Antigravity Voyager LaTeX Enhancer
+ * Antigravity Voyager LaTeX Enhancer (v2.0 增强穿透版)
  * 灵感来源: Gemini Voyager & 016/Antigravity-Better
  * 
- * 核心特性:
- *  1. 纯本地前端交互，零外部网络请求，零 Token/RPC 触碰
- *  2. 行内/块级 KaTeX 公式卡片化美化（适配浅色/深色主题）
- *  3. 单击公式一键复制纯 LaTeX 源码；按住 Option/Alt 点击复制带 $/$$ 定界符源码
- *  4. 选区 Cmd+C 智能拦截还原，杜绝公式复制乱码与重影
- *  5. 全流程 try...catch 防御性封装，任何异常静默降级，绝不影响客户端正常运行
+ * 核心特性与架构加固:
+ *  1. 完整穿透 Shadow DOM: 样式同步注入 shadowRoot，MutationObserver 深度监听
+ *  2. 采用 e.composedPath() 跨越 Shadow 边界捕获点击，彻底解决事件重定向丢失问题
+ *  3. 纯本地前端交互，零外部网络请求，零 Token/RPC 触碰
+ *  4. 行内/块级 KaTeX 公式卡片化美化（适配浅色/深色主题）
+ *  5. 单击公式一键复制纯 LaTeX 源码；按住 Option/Alt 点击复制带 $/$$ 定界符源码
+ *  6. 选区 Cmd+C 智能拦截还原，杜绝公式复制乱码与重影
+ *  7. 全流程 try...catch 防御性封装，任何异常静默降级，绝不影响客户端正常运行
  * ==============================================================================
  */
 (function () {
@@ -18,146 +20,154 @@
   window.__VOYAGER_LATEX_INITIALIZED__ = true;
 
   try {
-    // 1. 注入 Voyager 风格卡片 CSS 样式
     const STYLE_ID = 'voyager-latex-styles';
-    function injectStyles() {
+    const CSS_CONTENT = `
+      /* ========== 块级公式 (.katex-display / .voyager-math-block) 代码块卡片 ========== */
+      .katex-display,
+      .voyager-math-block {
+        position: relative !important;
+        display: block !important;
+        margin: 12px 0 !important;
+        padding: 14px 18px !important;
+        background: rgba(128, 128, 128, 0.08) !important;
+        border: 1px solid rgba(128, 128, 128, 0.22) !important;
+        border-radius: 8px !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        cursor: pointer !important;
+        transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease !important;
+        user-select: text !important;
+      }
+
+      .katex-display:hover,
+      .voyager-math-block:hover {
+        background: rgba(77, 159, 255, 0.09) !important;
+        border-color: rgba(77, 159, 255, 0.55) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12) !important;
+      }
+
+      /* 右上角悬浮提示角标 */
+      .katex-display::after,
+      .voyager-math-block::after {
+        content: attr(data-voyager-badge);
+        position: absolute;
+        top: 6px;
+        right: 8px;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.4;
+        padding: 2px 7px;
+        border-radius: 4px;
+        background: rgba(30, 30, 30, 0.85);
+        color: #e6edf3;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        opacity: 0;
+        transform: translateY(-2px);
+        transition: opacity 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
+        pointer-events: none;
+        white-space: nowrap;
+        z-index: 10;
+      }
+
+      .katex-display:hover::after,
+      .voyager-math-block:hover::after {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* 复制成功状态高亮反馈 */
+      .katex-display.voyager-copied,
+      .voyager-math-block.voyager-copied {
+        border-color: rgba(46, 204, 113, 0.85) !important;
+        background: rgba(46, 204, 113, 0.12) !important;
+      }
+      .katex-display.voyager-copied::after,
+      .voyager-math-block.voyager-copied::after {
+        opacity: 1 !important;
+        background: rgba(39, 174, 96, 0.95) !important;
+        color: #ffffff !important;
+        border-color: rgba(255, 255, 255, 0.3) !important;
+      }
+
+      /* ========== 行内公式 (:not(.katex-display) > .katex) 胶囊卡片 ========== */
+      :not(.katex-display) > .katex,
+      .voyager-math-inline {
+        position: relative;
+        display: inline-block;
+        padding: 1px 6px !important;
+        margin: 0 2px !important;
+        background: rgba(128, 128, 128, 0.12) !important;
+        border: 1px solid rgba(128, 128, 128, 0.22) !important;
+        border-radius: 5px !important;
+        cursor: pointer !important;
+        transition: background-color 0.16s ease, border-color 0.16s ease !important;
+        vertical-align: baseline;
+      }
+
+      :not(.katex-display) > .katex:hover,
+      .voyager-math-inline:hover {
+        background: rgba(77, 159, 255, 0.16) !important;
+        border-color: rgba(77, 159, 255, 0.65) !important;
+      }
+
+      :not(.katex-display) > .katex.voyager-copied,
+      .voyager-math-inline.voyager-copied {
+        background: rgba(46, 204, 113, 0.22) !important;
+        border-color: rgba(46, 204, 113, 0.88) !important;
+      }
+
+      /* 全局悬浮反馈 Toast */
+      #voyager-latex-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 999999;
+        background: rgba(24, 26, 31, 0.95);
+        color: #f0f6fc;
+        border: 1px solid rgba(77, 159, 255, 0.45);
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", monospace;
+        font-size: 12px;
+        box-shadow: 0 6px 22px rgba(0, 0, 0, 0.38);
+        pointer-events: none;
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 0.18s ease, transform 0.18s ease;
+        max-width: 450px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #voyager-latex-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      #voyager-latex-toast .voyager-toast-code {
+        color: #79c0ff;
+        margin-left: 6px;
+        font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+      }
+    `;
+
+    // 1. 样式注入函数：支持向 Document 或 ShadowRoot 内部安全注入
+    function injectStylesIntoRoot(targetRoot) {
       try {
-        if (document.getElementById(STYLE_ID)) return;
+        if (!targetRoot) return;
+        const existing = targetRoot.querySelector ? targetRoot.querySelector('#' + STYLE_ID) : null;
+        if (existing) return;
+
         const style = document.createElement('style');
         style.id = STYLE_ID;
-        style.textContent = `
-          /* ========== 块级公式 (.katex-display / .voyager-math-block) 代码块卡片 ========== */
-          .katex-display,
-          .voyager-math-block {
-            position: relative !important;
-            display: block !important;
-            margin: 12px 0 !important;
-            padding: 14px 18px !important;
-            background: rgba(128, 128, 128, 0.08) !important;
-            border: 1px solid rgba(128, 128, 128, 0.22) !important;
-            border-radius: 8px !important;
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-            cursor: pointer !important;
-            transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease !important;
-            user-select: text !important;
-          }
+        style.textContent = CSS_CONTENT;
 
-          .katex-display:hover,
-          .voyager-math-block:hover {
-            background: rgba(77, 159, 255, 0.09) !important;
-            border-color: rgba(77, 159, 255, 0.55) !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12) !important;
-          }
-
-          /* 右上角悬浮提示角标 */
-          .katex-display::after,
-          .voyager-math-block::after {
-            content: attr(data-voyager-badge);
-            position: absolute;
-            top: 6px;
-            right: 8px;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
-            font-size: 11px;
-            font-weight: 500;
-            line-height: 1.4;
-            padding: 2px 7px;
-            border-radius: 4px;
-            background: rgba(30, 30, 30, 0.85);
-            color: #e6edf3;
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            opacity: 0;
-            transform: translateY(-2px);
-            transition: opacity 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
-            pointer-events: none;
-            white-space: nowrap;
-            z-index: 10;
-          }
-
-          .katex-display:hover::after,
-          .voyager-math-block:hover::after {
-            opacity: 1;
-            transform: translateY(0);
-          }
-
-          /* 复制成功状态高亮反馈 */
-          .katex-display.voyager-copied,
-          .voyager-math-block.voyager-copied {
-            border-color: rgba(46, 204, 113, 0.85) !important;
-            background: rgba(46, 204, 113, 0.12) !important;
-          }
-          .katex-display.voyager-copied::after,
-          .voyager-math-block.voyager-copied::after {
-            opacity: 1 !important;
-            background: rgba(39, 174, 96, 0.95) !important;
-            color: #ffffff !important;
-            border-color: rgba(255, 255, 255, 0.3) !important;
-          }
-
-          /* ========== 行内公式 (:not(.katex-display) > .katex) 胶囊卡片 ========== */
-          :not(.katex-display) > .katex,
-          .voyager-math-inline {
-            position: relative;
-            display: inline-block;
-            padding: 1px 6px !important;
-            margin: 0 2px !important;
-            background: rgba(128, 128, 128, 0.12) !important;
-            border: 1px solid rgba(128, 128, 128, 0.22) !important;
-            border-radius: 5px !important;
-            cursor: pointer !important;
-            transition: background-color 0.16s ease, border-color 0.16s ease !important;
-            vertical-align: baseline;
-          }
-
-          :not(.katex-display) > .katex:hover,
-          .voyager-math-inline:hover {
-            background: rgba(77, 159, 255, 0.16) !important;
-            border-color: rgba(77, 159, 255, 0.65) !important;
-          }
-
-          :not(.katex-display) > .katex.voyager-copied,
-          .voyager-math-inline.voyager-copied {
-            background: rgba(46, 204, 113, 0.22) !important;
-            border-color: rgba(46, 204, 113, 0.88) !important;
-          }
-
-          /* 全局悬浮反馈 Toast */
-          #voyager-latex-toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 999999;
-            background: rgba(24, 26, 31, 0.95);
-            color: #f0f6fc;
-            border: 1px solid rgba(77, 159, 255, 0.45);
-            border-radius: 8px;
-            padding: 8px 14px;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", monospace;
-            font-size: 12px;
-            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.38);
-            pointer-events: none;
-            opacity: 0;
-            transform: translateY(8px);
-            transition: opacity 0.18s ease, transform 0.18s ease;
-            max-width: 450px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-          }
-          #voyager-latex-toast.show {
-            opacity: 1;
-            transform: translateY(0);
-          }
-          #voyager-latex-toast .voyager-toast-code {
-            color: #79c0ff;
-            margin-left: 6px;
-            font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
-          }
-        `;
-        (document.head || document.documentElement).appendChild(style);
-      } catch (e) {
-        // 静默保护
-      }
+        if (targetRoot === document) {
+          (document.head || document.documentElement).appendChild(style);
+        } else {
+          targetRoot.appendChild(style);
+        }
+      } catch (e) {}
     }
 
     // 2. 右下角轻量 Toast 提示
@@ -212,10 +222,15 @@
       return null;
     }
 
-    // 4. 为已渲染的 KaTeX 节点打上标记与角标
+    // 追踪所有已被监听的 ShadowRoot，防止重复绑定
+    const observedShadowRoots = new WeakSet();
+
+    // 4. 深度遍历并装饰 KaTeX 节点（支持穿透 Shadow DOM）
     function decorateKatexNodes(root) {
       if (!root) return;
       try {
+        injectStylesIntoRoot(root);
+
         const blockNodes = root.querySelectorAll ? root.querySelectorAll('.katex-display:not([data-voyager-ready])') : [];
         blockNodes.forEach((el) => {
           const tex = extractLatex(el);
@@ -237,11 +252,21 @@
           }
         });
 
-        // 递归穿透 Shadow DOM
+        // 递归穿透并监听所有子级 ShadowRoot
         const allElements = root.querySelectorAll ? root.querySelectorAll('*') : [];
         for (let i = 0; i < allElements.length; i++) {
-          if (allElements[i].shadowRoot) {
-            decorateKatexNodes(allElements[i].shadowRoot);
+          const sr = allElements[i].shadowRoot;
+          if (sr) {
+            if (!observedShadowRoots.has(sr)) {
+              observedShadowRoots.add(sr);
+              injectStylesIntoRoot(sr);
+              // 对 shadowRoot 挂载独立观察器以捕获内部流式新增节点
+              const shadowObserver = new MutationObserver(() => {
+                decorateKatexNodes(sr);
+              });
+              shadowObserver.observe(sr, { childList: true, subtree: true });
+            }
+            decorateKatexNodes(sr);
           }
         }
       } catch (e) {}
@@ -270,7 +295,7 @@
       }
     }
 
-    // 6. 全局捕获点击事件：点击任意公式触发复制
+    // 6. 全局捕获点击事件：改用 e.composedPath() 跨越 Shadow DOM 边界寻找公式目标
     document.addEventListener(
       'click',
       async function (e) {
@@ -278,13 +303,30 @@
           const sel = window.getSelection();
           if (sel && sel.toString().trim().length > 0) return;
 
-          const target = e.target.closest ? e.target.closest('.katex-display, .katex, .voyager-math-block, .voyager-math-inline') : null;
+          // 核心加固：使用 composedPath() 穿透 Shadow DOM，避免 e.target 被重定向为 Shadow Host
+          const path = (typeof e.composedPath === 'function') ? e.composedPath() : [e.target];
+          let target = null;
+          let blockContainer = null;
+
+          for (let i = 0; i < path.length; i++) {
+            const el = path[i];
+            if (!el || !el.classList) continue;
+
+            if (el.classList.contains('katex-display') || el.classList.contains('voyager-math-block')) {
+              blockContainer = el;
+              if (!target) target = el;
+              break;
+            } else if (el.classList.contains('katex') || el.classList.contains('voyager-math-inline')) {
+              if (!target) target = el;
+            }
+          }
+
           if (!target) return;
 
-          const container = target.closest('.katex-display, .voyager-math-block') || target;
+          const container = blockContainer || target;
           const isBlock = container.classList.contains('katex-display') || container.classList.contains('voyager-math-block');
 
-          const rawLatex = extractLatex(container);
+          const rawLatex = extractLatex(container) || extractLatex(target);
           if (!rawLatex) return;
 
           e.preventDefault();
@@ -318,7 +360,7 @@
       true
     );
 
-    // 7. 拦截 Cmd+C 框选复制：将选中区域公式还原为 Markdown 源码
+    // 7. 拦截 Cmd+C 框选复制：将选区内的公式无缝还原为 Markdown 源码
     document.addEventListener('copy', function (e) {
       try {
         const sel = window.getSelection();
@@ -355,14 +397,13 @@
       } catch (err) {}
     });
 
-    // 8. 启动 MutationObserver 监听
+    // 8. 启动全局 MutationObserver 监听
     function initObserver() {
       try {
-        injectStyles();
-        decorateKatexNodes(document.body || document.documentElement);
+        decorateKatexNodes(document);
 
         const observer = new MutationObserver(() => {
-          decorateKatexNodes(document.body || document.documentElement);
+          decorateKatexNodes(document);
         });
 
         observer.observe(document.body || document.documentElement, {
@@ -378,6 +419,6 @@
       initObserver();
     }
   } catch (globalErr) {
-    // 根级保护，绝对不向外抛出任何异常
+    // 根级防御保护，绝对不向外抛出任何异常
   }
 })();
