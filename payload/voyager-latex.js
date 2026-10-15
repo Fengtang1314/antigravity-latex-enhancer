@@ -1,16 +1,19 @@
 /**
  * ==============================================================================
- * Antigravity Voyager LaTeX Enhancer (v2.0 增强穿透版)
+ * Antigravity Voyager LaTeX Enhancer (v2.1 对抗性加固终极版)
  * 灵感来源: Gemini Voyager & 016/Antigravity-Better
  * 
  * 核心特性与架构加固:
  *  1. 完整穿透 Shadow DOM: 样式同步注入 shadowRoot，MutationObserver 深度监听
  *  2. 采用 e.composedPath() 跨越 Shadow 边界捕获点击，彻底解决事件重定向丢失问题
- *  3. 纯本地前端交互，零外部网络请求，零 Token/RPC 触碰
- *  4. 行内/块级 KaTeX 公式卡片化美化（适配浅色/深色主题）
- *  5. 单击公式一键复制纯 LaTeX 源码；按住 Option/Alt 点击复制带 $/$$ 定界符源码
- *  6. 选区 Cmd+C 智能拦截还原，杜绝公式复制乱码与重影
- *  7. 全流程 try...catch 防御性封装，任何异常静默降级，绝不影响客户端正常运行
+ *  3. requestAnimationFrame 帧率节流调度: 杜绝 AI 高速流式生成时的 DOM 重复扫描与 CPU 飙高
+ *  4. 输入框/编辑器绝对免疫: INPUT / TEXTAREA / contentEditable 状态下绝对不干预原生复制
+ *  5. 多源 LaTeX 源码提取: 支持 annotation / alttext / data-tex / data-latex / aria-label 多重兜底
+ *  6. 纯本地前端交互，零外部网络请求，零 Token/RPC 触碰
+ *  7. 行内/块级 KaTeX 公式卡片化美化（适配浅色/深色主题）
+ *  8. 单击公式一键复制纯 LaTeX 源码；按住 Option/Alt 点击复制带 $/$$ 定界符源码
+ *  9. 选区 Cmd+C 智能拦截还原，杜绝公式复制乱码与重影
+ *  10. 全流程 try...catch 防御性封装，任何异常静默降级，绝不影响客户端正常运行
  * ==============================================================================
  */
 (function () {
@@ -120,7 +123,7 @@
       /* 全局悬浮反馈 Toast */
       #voyager-latex-toast {
         position: fixed;
-        bottom: 24px;
+        bottom: 30px;
         right: 24px;
         z-index: 999999;
         background: rgba(24, 26, 31, 0.95);
@@ -197,23 +200,32 @@
       } catch (e) {}
     }
 
-    // 3. 从 DOM 节点提取原始 LaTeX 源码
+    // 3. 从 DOM 节点提取原始 LaTeX 源码（多源防御式读取）
     function extractLatex(node) {
       if (!node) return null;
       try {
-        const cached = node.getAttribute('data-voyager-latex') || node.getAttribute('data-latex');
+        // A. 缓存属性优先
+        const cached = node.getAttribute('data-voyager-latex') || node.getAttribute('data-latex') || node.getAttribute('data-tex');
         if (cached) return cached.trim();
 
+        // B. KaTeX 标准 MathML 语义注解标签
         const annotation = node.querySelector('annotation[encoding="application/x-tex"]');
         if (annotation && annotation.textContent) {
           return annotation.textContent.trim();
         }
 
+        // C. math alttext / aria-label 属性
         const mathEl = node.querySelector('math[alttext]');
         if (mathEl && mathEl.getAttribute('alttext')) {
           return mathEl.getAttribute('alttext').trim();
         }
 
+        const aria = node.getAttribute('aria-label') || (mathEl && mathEl.getAttribute('aria-label'));
+        if (aria && (aria.includes('\\') || aria.includes('='))) {
+          return aria.trim();
+        }
+
+        // D. 递归向上查找父级
         const katexParent = node.closest('.katex-display, .katex, .voyager-math-block, .voyager-math-inline');
         if (katexParent && katexParent !== node) {
           return extractLatex(katexParent);
@@ -260,9 +272,15 @@
             if (!observedShadowRoots.has(sr)) {
               observedShadowRoots.add(sr);
               injectStylesIntoRoot(sr);
-              // 对 shadowRoot 挂载独立观察器以捕获内部流式新增节点
+              // 对 shadowRoot 挂载独立观察器（带 rAF 节流）
+              let shadowRaf = false;
               const shadowObserver = new MutationObserver(() => {
-                decorateKatexNodes(sr);
+                if (shadowRaf) return;
+                shadowRaf = true;
+                requestAnimationFrame(() => {
+                  shadowRaf = false;
+                  decorateKatexNodes(sr);
+                });
               });
               shadowObserver.observe(sr, { childList: true, subtree: true });
             }
@@ -363,6 +381,12 @@
     // 7. 拦截 Cmd+C 框选复制：将选区内的公式无缝还原为 Markdown 源码
     document.addEventListener('copy', function (e) {
       try {
+        // 对抗加固：如果用户在输入框、文本域或可编辑区域操作，绝对不干预原生输入复制
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
+          return;
+        }
+
         const sel = window.getSelection();
         if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
 
@@ -397,13 +421,23 @@
       } catch (err) {}
     });
 
-    // 8. 启动全局 MutationObserver 监听
+    // 8. 启动全局 MutationObserver 监听（带 requestAnimationFrame 帧率节流）
+    let globalRaf = false;
+    function scheduleGlobalDecoration() {
+      if (globalRaf) return;
+      globalRaf = true;
+      requestAnimationFrame(() => {
+        globalRaf = false;
+        decorateKatexNodes(document);
+      });
+    }
+
     function initObserver() {
       try {
         decorateKatexNodes(document);
 
         const observer = new MutationObserver(() => {
-          decorateKatexNodes(document);
+          scheduleGlobalDecoration();
         });
 
         observer.observe(document.body || document.documentElement, {

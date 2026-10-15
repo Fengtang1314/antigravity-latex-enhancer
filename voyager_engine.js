@@ -100,7 +100,8 @@ function syncAsarIntegrityToInfoPlist(appPath, asarPath) {
 
 function resignAppOnMac(appPath) {
     if (process.platform !== 'darwin') return true;
-    console.log(`[签名] 正在对应用包进行本地 ad-hoc 深度重签名: ${appPath}`);
+    console.log(`[签名] 正在清理干扰文件并对应用包进行本地 ad-hoc 深度重签名: ${appPath}`);
+    runCommandSync(`find "${appPath}" -name ".DS_Store" -delete 2>/dev/null || true`);
     const res = runCommandSync(`codesign --force --deep --sign - "${appPath}"`);
     if (!res.success) {
         console.warn(`[警告] 重新签名失败: ${res.stderr}`);
