@@ -1,34 +1,63 @@
-# Antigravity Voyager LaTeX 公式增强插件 (macOS)
+<div align="center">
 
-专为 **Google Antigravity 2.x (macOS)** 定制的轻量级 KaTeX 公式排版美化与一键复制增强插件。
+<img src="./assets/banner.svg" alt="Antigravity Voyager LaTeX Banner" width="100%"/>
 
-完美兼容现有的**中文汉化补丁**，彻底修复 Chromium 内核下公式居中右偏的渲染顽疾，并全面重构对齐 **Claude 极简暖色美学**。
+<br/>
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-D97757.svg?style=flat-square)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-macOS%20(Intel%20%7C%20Apple%20Silicon)-141413.svg?style=flat-square)](#)
+[![Antigravity](https://img.shields.io/badge/Antigravity-v2.x%20Ready-FAF5EE.svg?style=flat-square&logoColor=141413)](#)
+[![Style](https://img.shields.io/badge/Style-Claude%20Minimalist%20Warmth-D97757.svg?style=flat-square)](#)
+[![Security](https://img.shields.io/badge/Security-0%20Network%20%7C%20100%25%20Local-27ae60.svg?style=flat-square)](#)
+
+<p align="center">
+  <b>专为 Google Antigravity 2.x (macOS) 定制的轻量级 KaTeX 公式排版美化与一键复制增强插件</b><br/>
+  <i>告别凌乱重影与右偏顽疾 · 对齐 Claude 极简暖色美学 · 完美兼容中文汉化</i>
+</p>
+
+[✨ 核心功能](#-核心功能) •
+[⚡ 效果对比](#-效果对比) •
+[🚀 极速上手](#-极速上手) •
+[🛡️ 架构与安全](#️-架构与安全闭环) •
+[🤝 致谢与声明](#-致谢与声明-acknowledgements)
+
+</div>
 
 ---
 
-## 🌟 核心特性
+## ⚡ 效果对比
 
-1. **Claude 极简人文美学 (Minimalist Warmth)**：
-   - **底色方案**：适配 `#FAF5EE`（象牙暖白纸面）、`#141413`（温润深炭灰）与 `#D97757`（Anthropic Claude 标志性 Terracotta 陶土橙）。
-   - **常态零干扰**：块级公式与行内公式在常态下均为**完全透明、零灰色边框、零底色**，与正文字体自然流动，保持纯净阅读质感。
-   - **悬停微交互**：仅当鼠标移动到公式上时，才轻柔淡出浅米纸色温润微底色，右上角淡入浮现极简微标 `📋 复制 LaTeX`。
-   - **极简暖色 Toast**：点击复制后，右下角弹出 Claude 纸面白底与陶土橙点缀的轻量微弹窗，彻底告别突兀的控制台黑框蓝底。
+| 体验维度 | Antigravity 原版原生状态 | **安装 Voyager LaTeX 增强后** |
+| :--- | :--- | :--- |
+| **公式排版对齐** | Chromium MathML 占据左侧宽度，**公式整体向右严重偏离** | **裁剪 MathML 占位，Flexbox 绝对居中，100% 正中优雅呈现** |
+| **视觉呈现质感** | 缺少呼吸感，深浅色对比突兀或僵硬 | **Claude 暖色极简纸面美学（`#FAF5EE` / `#141413` / `#D97757`），常态零边框零底色** |
+| **一键复制 TeX** | ❌ 无法复制，右键无响应 | **✅ 鼠标悬停淡出微标，单击直接复制纯 LaTeX 源码** |
+| **定界符智能包裹** | ❌ 需手动补充 `$$...$$` | **✅ 按住 Option (⌥) 单击公式，自动携带定界符复制** |
+| **选区 Cmd+C 复制** | 复制出 KaTeX 内部重影字符与杂乱文本 | **智能拦截还原为标准的 Markdown 源码（如 `$x$` 与 `$$...$$`）** |
+| **中文汉化共存** | 修改经常导致汉化丢失或客户端损坏 | **物理级解耦，与任何中文汉化补丁 100% 独立稳定共存** |
 
-2. **彻底修复 Chromium MathML 居中右偏 Bug**：
-   - 深入定位 KaTeX 在 Electron/Chromium 下的 DOM 布局机理，对占据宽度的 `<span class="katex-mathml">` 实施绝对定位裁剪与文档流剥离，结合 Flexbox 真正实现块级公式 **100% 绝对正中居中**。
+---
 
-3. **一键提取与智能 Markdown 选区还原**：
-   - **单击公式**：直接将纯 LaTeX 源码复制到剪贴板。
-   - **Option (⌥) + 单击公式**：自动携带 `$$...$$`（块级）或 `$...$`（行内）定界符复制。
-   - **选区 Cmd+C 智能拦截**：鼠标拖选包含中文字符与公式的一整段回答时，智能还原公式为标准的 Markdown TeX 源码，彻底消除原生 KaTeX 复制产生的文字重影与符号错乱。
+## 🌟 核心功能
 
-4. **与中文汉化 100% 独立共存**：
-   - 采用独立注释标记（`/* --- VOYAGER-LATEX-START --- */`）注入 `dist/preload.js`。
-   - 与任何第三方中文汉化包物理级解耦，互不干扰、互不污染。
+### 1. Claude 极简人文美学 (Minimalist Warmth)
+- **纸面基调**：针对追求专注阅读的研究者与开发者，全面对齐 Claude 暖白纸面配色体系（`#FAF5EE` 背景、`#141413` 炭灰文字、`#D97757` 陶土橙强调色）。
+- **常态零打扰**：正文中的行内公式与段落间的独立块级公式，在未交互状态下保持**100% 纯净透明、零灰色边框、零底色**，完美融入自然行文流。
+- **悬停微反馈**：鼠标移入公式时，极轻柔淡出温润微底色与陶土橙细致边框，右上角浮现极简纸质微标 `📋 复制 LaTeX`；点击即瞬间绿色闪烁反馈并弹出暖色微 Toast。
+- **杜绝系统原生灰色气泡**：彻底屏蔽浏览器原生的 `title` 灰色气泡重叠，还视觉一份清爽。
 
-5. **macOS Apple Silicon 签名闭环与原子自愈**：
-   - 打包全程在系统临时目录生成并校验，执行原子替换，杜绝应用损坏风险。
-   - 自动同步更新 `Contents/Info.plist` 中的 `ElectronAsarIntegrity` 校验哈希，并调用原生 `codesign` 深度重签与清除隔离属性，完全杜绝系统拦截。
+### 2. 彻底根治 Chromium MathML 布局偏移
+- KaTeX 渲染时内含 `<span class="katex-mathml">` 语义层，在 Electron 内核下会意外霸占左侧 ~320px 宽度，导致可见公式整体向右漂移。
+- 本插件对其施加绝对定位与视口裁剪，释放全部排版空间，彻底实现视口内的**绝对几何居中**。
+
+### 3. 一键提取与智能 Markdown 选区还原
+- **单击公式**：直接提取底层 `annotation`、`alttext`、`data-latex` 等原始源文本写入剪贴板。
+- **Option (⌥) + 单击**：智能判断行内/块级，分别补齐 `$...$` 或 `$$...$$` 包装。
+- **Cmd+C 选区拦截**：用鼠标大面积划选回答文本并复制时，静默穿透 DOM 并把其中的 KaTeX 节点还原为 Markdown 纯文本。
+
+### 4. 完美兼容 Antigravity 2.x 全量 ASAR 架构
+- 自动适配 Antigravity 2.0+ 将全部资源封入 `app.asar` 的架构变动。
+- 注入点位于 `dist/preload.js` 独立闭环注释块内，不碰触任何业务源码与汉化词典。
 
 ---
 
@@ -36,49 +65,53 @@
 
 ```text
 antigravity-voyager-latex/
-├── 双击安装公式增强.command      # macOS 一键安装入口（自动提权 + 进程防锁 + 自动重签）
-├── 双击卸载还原.command         # macOS 一键卸载入口（精准回滚至安装前纯净状态）
+├── assets/
+│   └── banner.svg             # 项目官方宣传 Banner
+├── 双击安装公式增强.command      # macOS 一键安装脚本（自动提权 + 进程防锁 + 自动重签）
+├── 双击卸载还原.command         # macOS 一键卸载脚本（精准回滚至安装前纯净状态）
 ├── voyager_engine.js           # 适配 Antigravity 2.x 的 ASAR 解包/注入/打包/重签引擎
 ├── payload/
 │   └── voyager-latex.js        # 前端核心交互逻辑（DOM 穿透监听、Claude 样式与 Toast）
+├── CHANGELOG.md                # 版本演进日志
+├── CONTRIBUTING.md             # 社区贡献指南
 ├── LICENSE                     # MIT 开源许可证
 └── README.md                   # 项目说明文档
 ```
 
 ---
 
-## 🚀 使用方法
+## 🚀 极速上手
 
 ### 1. 一键安装
-1. 完全退出 Antigravity 应用程序（`Cmd + Q`）。
-2. 在访达（Finder）中双击运行 **`双击安装公式增强.command`**。
-3. 终端会提示输入电脑开机密码以获得修改权限（输入时密码不显示，直接回车）。
-4. 运行完成后重新启动 Antigravity 即可生效。
+1. 按 `Cmd + Q` 完全退出 Antigravity 客户端。
+2. 在访达（Finder）中打开本项目文件夹，**双击运行 `双击安装公式增强.command`**。
+3. 终端会提示输入开机密码以授予修改应用目录权限（输入时密码不显示，直接回车）。
+4. 提示安装成功后，重新启动 Antigravity 即可尽享丝滑公式交互！
 
 ### 2. 一键卸载还原
-1. 完全退出 Antigravity 应用程序。
+1. 完全退出 Antigravity 客户端。
 2. 双击运行 **`双击卸载还原.command`**。
-3. 应用将无痕恢复至安装公式插件前的状态。
+3. 应用将通过冷备或代码级正则清洗，1 秒内无损恢复至安装前的纯净状态。
 
 ---
 
-## 🛡️ 安全与隐私边界
+## 🛡️ 架构与安全闭环
 
-* **纯本地前端交互**：零网络请求（0 Fetch / 0 XHR / 0 RPC），绝不向外发送任何数据。
-* **零 Token 触碰**：不拦截、不修改任何用户 API Key、Token 或大模型上下行内容，完全规避账号风控。
-* **全流程防御性封装**：所有 DOM 探测均经过 `try...catch` 防御包裹，遇到非标准元素静默降级，确保客户端永远稳定运行。
+* **纯本地零网络（Zero Network Call）**：代码不含任何 `fetch`、`XMLHttpRequest` 或网络模块，0 远程交互，0 Telemetry 跟踪。
+* **零账号与 Token 风控风险**：纯前端 DOM 层样式装饰与剪贴板增强，完全不碰模型推理、通信 RPC 或身份验证头。
+* **macOS 签名自愈**：自动化引擎在打包后自动更新 `Contents/Info.plist` 中的 `ElectronAsarIntegrity` 头部校验哈希，并调用原生 `codesign --force --deep --sign -` 重新签名与清理系统隔离标记，彻底杜绝系统“应用已损坏”弹窗。
 
 ---
 
 ## 🤝 致谢与声明 (Acknowledgements)
 
-本项目在开发与设计过程中，深受以下优秀项目的启发与帮助，特此诚挚致谢：
-* **[Gemini Voyager]**：灵感来源于网页端公式一键复制体验。
-* **[016/Antigravity-Better]**：感谢其在 Antigravity 早期版本样式注入上的先行探索。
-* **[antigravity2汉化] 社区**：感谢汉化生态所提供的 macOS 部署经验与架构参考。
+本项目在诞生过程中，深受开源社区先驱项目的启发：
+* **[Gemini Voyager]**：感谢其在网页端开创的极简公式复制交互范式。
+* **[016/Antigravity-Better]**：感谢其在早期版本样式探索上的先驱贡献。
+* **[antigravity2汉化] 社区**：感谢汉化生态为 macOS 用户提供的卓越本地化支持。
 
 ---
 
 ## 📄 开源许可证
 
-本项目采用 [MIT License](LICENSE) 开源协议。
+本项目基于 [MIT License](LICENSE) 协议开源。

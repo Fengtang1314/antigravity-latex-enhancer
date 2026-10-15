@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FAF5EE"/>
+      <stop offset="100%" stop-color="#F3ECE2"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-10%" width="110%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#141413" flood-opacity="0.06"/>
+    </filter>
+    <filter id="badgeShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#141413" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1200" height="420" rx="16" fill="url(#bgGrad)"/>
+  <rect x="1.5" y="1.5" width="1197" height="417" rx="14.5" fill="none" stroke="#E3D7C7" stroke-width="2"/>
+
+  <!-- Subtle Mathematical Watermarks in Background -->
+  <g opacity="0.07" fill="#141413" font-family="'Times New Roman', Times, serif" font-style="italic">
+    <text x="60" y="100" font-size="52">∫ e^(-x²) dx = √π</text>
+    <text x="880" y="90" font-size="46">∇ × E = -∂B/∂t</text>
+    <text x="1000" y="360" font-size="56">e^(iπ) + 1 = 0</text>
+    <text x="80" y="370" font-size="44">iℏ ∂Ψ/∂t = ĤΨ</text>
+  </g>
+
+  <!-- Left Side: Main Title & Value Propositions -->
+  <g transform="translate(80, 110)">
+    <!-- Small Category Pill -->
+    <rect x="0" y="0" width="220" height="30" rx="15" fill="#D97757" fill-opacity="0.12"/>
+    <text x="110" y="19" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#D97757" text-anchor="middle" letter-spacing="1.2">ANTIGRAVITY 2.X TOOLKIT</text>
+
+    <!-- Main Title -->
+    <text x="0" y="75" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif" font-size="44" font-weight="700" fill="#141413" letter-spacing="-0.8">
+      Voyager LaTeX Enhancer
+    </text>
+
+    <!-- Subtitle -->
+    <text x="0" y="112" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" font-size="18" fill="#5E5B55" font-weight="400">
+      KaTeX 公式排版美化与一键复制增强 · 对齐 Claude 极简暖色美学
+    </text>
+
+    <!-- Feature Tags -->
+    <g transform="translate(0, 150)">
+      <!-- Tag 1 -->
+      <rect x="0" y="0" width="110" height="28" rx="6" fill="#FFFFFF" stroke="#E2D8CC" stroke-width="1"/>
+      <text x="55" y="18" font-family="-apple-system, sans-serif" font-size="12" font-weight="500" fill="#141413" text-anchor="middle">⚡ 一键复制 TeX</text>
+
+      <!-- Tag 2 -->
+      <rect x="120" y="0" width="124" height="28" rx="6" fill="#FFFFFF" stroke="#E2D8CC" stroke-width="1"/>
+      <text x="182" y="18" font-family="-apple-system, sans-serif" font-size="12" font-weight="500" fill="#141413" text-anchor="middle">🎯 MathML 居中修复</text>
+
+      <!-- Tag 3 -->
+      <rect x="254" y="0" width="116" height="28" rx="6" fill="#FFFFFF" stroke="#E2D8CC" stroke-width="1"/>
+      <text x="312" y="18" font-family="-apple-system, sans-serif" font-size="12" font-weight="500" fill="#141413" text-anchor="middle">🎨 Claude 极简风</text>
+
+      <!-- Tag 4 -->
+      <rect x="380" y="0" width="110" height="28" rx="6" fill="#FFFFFF" stroke="#E2D8CC" stroke-width="1"/>
+      <text x="435" y="18" font-family="-apple-system, sans-serif" font-size="12" font-weight="500" fill="#141413" text-anchor="middle">🇨🇳 完美兼容汉化</text>
+    </g>
+  </g>
+
+  <!-- Right Side: Interactive Mockup Card -->
+  <g transform="translate(680, 115)" filter="url(#shadow)">
+    <!-- Formula Card Container -->
+    <rect width="440" height="180" rx="12" fill="#FAF5EE" stroke="#D97757" stroke-width="1.5" stroke-opacity="0.38"/>
+    
+    <!-- Top-Right Floating Badge (Hover State) -->
+    <g transform="translate(310, 14)" filter="url(#badgeShadow)">
+      <rect width="114" height="26" rx="5" fill="#FAF5EE" stroke="#D97757" stroke-width="1" stroke-opacity="0.5"/>
+      <text x="57" y="17" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#141413" text-anchor="middle">📋 复制 LaTeX</text>
+    </g>
+
+    <!-- Rendered Formula (Centered) -->
+    <g transform="translate(220, 102)" text-anchor="middle" font-family="'Times New Roman', Times, serif" font-style="italic">
+      <text x="0" y="0" font-size="28" fill="#141413">
+        f(x) = ∑ <tspan font-size="22" font-style="normal">α</tspan><tspan font-size="18" dy="-10">k</tspan><tspan font-size="26" dy="10">x</tspan><tspan font-size="18" dy="-10">k</tspan><tspan font-size="28" dy="10"> / k!</tspan>
+      </text>
+    </g>
+
+    <!-- Sub-bar hint inside card -->
+    <line x1="20" y1="145" x2="420" y2="145" stroke="#E8DFD3" stroke-width="1"/>
+    <text x="220" y="165" font-family="-apple-system, sans-serif" font-size="11" fill="#8C877F" text-anchor="middle">
+      常态 100% 纯净居中 · 悬停轻柔淡出 · 单击复制纯 TeX · Option+单击带 $$
+    </text>
+  </g>
+</svg>
