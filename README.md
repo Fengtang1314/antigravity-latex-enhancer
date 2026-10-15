@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="./assets/banner.svg" alt="Antigravity Voyager LaTeX Banner" width="100%"/>
+<img src="./assets/banner.svg" alt="Antigravity LaTeX Enhancer Banner" width="100%"/>
 
 <br/>
 
-[![Latest Release](https://img.shields.io/github/v/release/Fengtang1314/antigravity-voyager-latex?style=for-the-badge&logo=github&color=D97757&label=📦%20下载最新%20Release%20安装包)](https://github.com/Fengtang1314/antigravity-voyager-latex/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/Fengtang1314/antigravity-latex-enhancer?style=for-the-badge&logo=github&color=D97757&label=📦%20下载最新%20Release%20安装包)](https://github.com/Fengtang1314/antigravity-latex-enhancer/releases/latest)
 
 <br/>
 
@@ -15,17 +15,33 @@
 [![Security](https://img.shields.io/badge/Security-0%20Network%20%7C%20100%25%20Local-27ae60.svg?style=flat-square)](#)
 
 <p align="center">
-  <b>专为 Google Antigravity 2.x (macOS) 定制的轻量级 KaTeX 公式排版美化与一键复制增强插件</b><br/>
-  <i>彻底告别公式右偏与复制重影 · 对齐 Claude 极简暖色美学 · 完美兼容中文汉化</i>
+  <b>专为 Google Antigravity 2.x (macOS) 打造的 LaTeX 公式美化与一键复制增强插件</b><br/>
+  <i>彻底告别公式右偏与复制乱码 · 赋予 Claude 极简暖色美学 · 完美兼容中文汉化补丁</i>
 </p>
 
-[📥 下载与安装](#-极速下载与安装) •
-[✨ 两大核心功能](#-两大核心功能) •
+[📥 极速下载与安装](#-极速下载与安装新手友好) •
+[🌟 核心特性](#-核心功能亮点) •
 [⚡ 效果对比](#-效果对比) •
+[❓ 常见问题 (FAQ)](#-常见问题排坑-faq) •
 [🛡️ 架构与安全](#️-架构与安全闭环) •
-[🤝 致谢与声明](#-致谢与声明-acknowledgements)
+[🤝 致谢与开源协议](#-致谢与声明-acknowledgements)
 
 </div>
+
+---
+
+### 🤔 你是否也在 Antigravity 中遇到过这些抓狂瞬间？
+
+* ❌ **公式严重偏右**：公式明明写了居中，渲染出来却莫名其妙偏向屏幕右侧一大截，左边空出一大片？
+* ❌ **复制全成乱码**：大模型推导出漂亮的公式，用鼠标划选复制出来却是一堆碎字符、缺失符号与重影，根本无法直接贴进论文或 Markdown？
+* ❌ **多行堆叠太挤**：分式、求和号和大括号挤压在一起，上下行紧贴碰撞，缺乏视觉呼吸感？
+* ❌ **汉化容易损坏**：动一下客户端配置就导致中文汉化补丁失效或应用报错？
+
+👉 **本项目专为解决上述痛点而生**：
+* 📐 **100% 水平正中居中**：彻底屏蔽 Chromium MathML 占位，Flexbox 绝对居中呈现；
+* 📋 **鼠标悬浮一键复制**：轻移鼠标淡出微标，**单击直接复制纯 LaTeX 源码**，按住 `Option (⌥)` 自动智能补齐 `$$` 定界符；
+* 🎨 **Claude 极简暖色美学**：平时完全透明零多余线框，悬停才轻柔浮现 `#FAF5EE` 暖白纸面质感；
+* 🇨🇳 **汉化 100% 稳定共存**：独立命名空间隔离注入，与社区中文汉化补丁物理级解耦。
 
 ---
 
@@ -43,11 +59,11 @@
 普通用户无需手动执行任何繁琐命令，跟随以下三步即可轻松搞定：
 
 #### 步骤 1：下载安装包
-前往仓库右侧的 **[Releases 发行版页面](https://github.com/Fengtang1314/antigravity-voyager-latex/releases/latest)**，下载预打包好的 **`antigravity-voyager-latex-v2.1.0.zip`**，下载后双击解压为一个文件夹。
+前往仓库右侧的 **[Releases 发行版页面](https://github.com/Fengtang1314/antigravity-latex-enhancer/releases/latest)**，下载预打包好的 **`antigravity-latex-enhancer-v2.1.0.zip`**，下载后双击解压为一个文件夹。
 
 > 💡 **开发者方式**：也可以直接克隆本仓库：
 > ```bash
-> git clone https://github.com/Fengtang1314/antigravity-voyager-latex.git
+> git clone https://github.com/Fengtang1314/antigravity-latex-enhancer.git
 > ```
 
 #### 步骤 2：一键自动安装
@@ -66,9 +82,9 @@
 
 ---
 
-## 🌟 两大核心功能
+## 🌟 核心功能亮点
 
-本项目主要解决两个长期困扰 Antigravity / Electron 用户的高频痛点：
+本项目主要解决长期困扰 Antigravity / Electron 用户的高频痛点：
 
 ### 功能一：LaTeX 公式排版深度优化与美化
 * **彻底根治公式居中向右偏移**：
@@ -79,7 +95,7 @@
   * **悬停微反馈**：鼠标移上公式时，才轻柔淡出温润微底色与陶土橙细致边框；
   * **告别原生灰色气泡**：屏蔽浏览器原生系统的灰底 Tooltip 气泡，视觉纯粹干净。
 
-### 功能二：Voyager 级一键公式提取与 Markdown 复制
+### 功能二：一键公式提取与 Markdown 复制增强
 * **单击一键提取 TeX 源码**：
   无需费力选中，鼠标悬停在公式上浮现 `📋 复制 LaTeX` 微标，**轻轻单击**即可将纯 LaTeX 源码复制到剪贴板，右下角弹出 Claude 暖色微 Toast 提示。
 * **按住 Option (⌥) 单击：智能定界符包裹**：
@@ -91,7 +107,7 @@
 
 ## ⚡ 效果对比
 
-| 体验维度 | Antigravity 原版原生状态 | **安装 Voyager LaTeX 增强后** |
+| 体验维度 | Antigravity 原版原生状态 | **安装本增强插件后** |
 | :--- | :--- | :--- |
 | **公式居中对齐** | Chromium MathML 占位，**公式整体向右严重偏离** | **裁剪 MathML 占位，Flexbox 绝对居中，100% 正中优雅呈现** |
 | **视觉呈现质感** | 缺少呼吸感，深浅色对比突兀或僵硬 | **Claude 暖色极简纸面美学（`#FAF5EE` / `#141413` / `#D97757`），常态零边框零底色** |
