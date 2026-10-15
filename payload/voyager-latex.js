@@ -44,7 +44,7 @@
       }
 
       /* ========== 块级公式 (.katex-display / .voyager-math-block) ========== */
-      /* 常态：完全透明，无灰色边框，无深底色，保证正文排版优雅纯净，完美居中 */
+      /* 常态：完全透明，无边框，无底色，绝对纯净居中，融入 Claude 极简风温润质感 */
       .katex-display,
       .voyager-math-block {
         position: relative !important;
@@ -54,7 +54,7 @@
         text-align: center !important;
         width: 100% !important;
         box-sizing: border-box !important;
-        margin: 12px 0 !important;
+        margin: 14px 0 !important;
         padding: 10px 16px !important;
         background: transparent !important;
         border: 1px solid transparent !important;
@@ -74,15 +74,15 @@
         margin: 0 auto !important;
       }
 
-      /* 悬浮状态：鼠标移入时才淡出细腻半透明卡片与提示 */
+      /* 悬浮状态：微淡温润底色与 Claude 陶土橙细致边框 (#D97757) */
       .katex-display:hover,
       .voyager-math-block:hover {
-        background: rgba(128, 128, 128, 0.06) !important;
-        border-color: rgba(128, 128, 128, 0.22) !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+        background: rgba(20, 20, 19, 0.02) !important;
+        border-color: rgba(217, 119, 87, 0.28) !important;
+        box-shadow: 0 2px 10px rgba(20, 20, 19, 0.03) !important;
       }
 
-      /* 右上角悬浮提示角标：常态绝对隐藏 (opacity: 0)，仅在 hover 时淡入 */
+      /* 右上角悬浮角标：极简 Claude 纸面风格 (#FAF5EE 背景、#141413 文字、#D97757 强调色细边) */
       .katex-display::after,
       .voyager-math-block::after {
         content: attr(data-voyager-badge);
@@ -93,17 +93,19 @@
         font-size: 11px;
         font-weight: 500;
         line-height: 1.4;
-        padding: 2px 8px;
-        border-radius: 4px;
-        background: rgba(30, 32, 36, 0.88);
-        color: #e6edf3;
-        border: 1px solid rgba(255, 255, 255, 0.16);
+        padding: 3px 8px;
+        border-radius: 5px;
+        background: #FAF5EE;
+        color: #141413;
+        border: 1px solid rgba(217, 119, 87, 0.35);
+        box-shadow: 0 2px 6px rgba(20, 20, 19, 0.06);
         opacity: 0;
         transform: translateY(-2px);
-        transition: opacity 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
+        transition: opacity 0.16s ease, transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
         pointer-events: none;
         white-space: nowrap;
         z-index: 10;
+        letter-spacing: 0.01em;
       }
 
       .katex-display:hover::after,
@@ -112,22 +114,21 @@
         transform: translateY(0);
       }
 
-      /* 复制成功状态高亮反馈 */
+      /* 复制成功状态高亮反馈：Claude 陶土色高亮 */
       .katex-display.voyager-copied,
       .voyager-math-block.voyager-copied {
-        border-color: rgba(46, 204, 113, 0.8) !important;
-        background: rgba(46, 204, 113, 0.08) !important;
+        border-color: rgba(217, 119, 87, 0.55) !important;
+        background: rgba(217, 119, 87, 0.06) !important;
       }
       .katex-display.voyager-copied::after,
       .voyager-math-block.voyager-copied::after {
         opacity: 1 !important;
-        background: rgba(39, 174, 96, 0.95) !important;
-        color: #ffffff !important;
-        border-color: rgba(255, 255, 255, 0.3) !important;
+        background: #D97757 !important;
+        color: #FAF5EE !important;
+        border-color: #D97757 !important;
       }
 
       /* ========== 行内公式 (:not(.katex-display) > .katex) ========== */
-      /* 常态：完全融入正文排版，零底色、零边框、inline 流式展示，绝不破坏行高与对齐 */
       :not(.katex-display) > .katex,
       .voyager-math-inline {
         position: relative !important;
@@ -136,55 +137,69 @@
         margin: 0 !important;
         background: transparent !important;
         border: none !important;
-        border-radius: 4px !important;
+        border-radius: 3px !important;
         cursor: pointer !important;
-        transition: background-color 0.15s ease, box-shadow 0.15s ease !important;
+        transition: background-color 0.15s ease !important;
         vertical-align: baseline !important;
       }
 
-      /* 行内公式悬浮状态：微弱浅蓝高亮底色，提示可点击复制 */
+      /* 行内公式悬浮状态：微弱陶土橙浅底色 */
       :not(.katex-display) > .katex:hover,
       .voyager-math-inline:hover {
-        background: rgba(77, 159, 255, 0.14) !important;
+        background: rgba(217, 119, 87, 0.12) !important;
       }
 
       /* 行内公式复制成功 */
       :not(.katex-display) > .katex.voyager-copied,
       .voyager-math-inline.voyager-copied {
-        background: rgba(46, 204, 113, 0.22) !important;
+        background: rgba(217, 119, 87, 0.25) !important;
       }
 
-      /* 全局悬浮反馈 Toast */
+      /* ========== 全局悬浮反馈 Toast（极简 Claude 暖白纸面风） ========== */
       #voyager-latex-toast {
         position: fixed;
-        bottom: 30px;
+        bottom: 28px;
         right: 24px;
         z-index: 999999;
-        background: rgba(24, 26, 31, 0.95);
-        color: #f0f6fc;
-        border: 1px solid rgba(77, 159, 255, 0.45);
+        background: #FAF5EE;
+        color: #141413;
+        border: 1px solid rgba(217, 119, 87, 0.38);
         border-radius: 8px;
         padding: 8px 14px;
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", monospace;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
         font-size: 12px;
-        box-shadow: 0 6px 22px rgba(0, 0, 0, 0.38);
+        line-height: 1.5;
+        box-shadow: 0 6px 20px rgba(20, 20, 19, 0.09), 0 1px 3px rgba(20, 20, 19, 0.05);
         pointer-events: none;
         opacity: 0;
         transform: translateY(8px);
-        transition: opacity 0.18s ease, transform 0.18s ease;
-        max-width: 450px;
+        transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        max-width: 480px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 6px;
       }
       #voyager-latex-toast.show {
         opacity: 1;
         transform: translateY(0);
       }
+      #voyager-latex-toast .voyager-toast-icon {
+        color: #D97757;
+        font-weight: 700;
+        font-size: 13px;
+      }
       #voyager-latex-toast .voyager-toast-code {
-        color: #79c0ff;
-        margin-left: 6px;
+        color: #b85b3b;
+        background: rgba(217, 119, 87, 0.08);
+        border: 1px solid rgba(217, 119, 87, 0.2);
+        border-radius: 4px;
+        padding: 1px 6px;
+        margin-left: 4px;
         font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+        font-size: 11.5px;
       }
     `;
 
@@ -207,7 +222,7 @@
       } catch (e) {}
     }
 
-    // 2. 右下角轻量 Toast 提示
+    // 2. 右下角轻量 Toast 提示（极简 Claude 暖色版）
     let toastTimer = null;
     function showToast(title, preview) {
       try {
@@ -218,14 +233,26 @@
           (document.body || document.documentElement).appendChild(toast);
         }
         const cleanPreview = (preview || '').replace(/\s+/g, ' ').trim();
-        const shortPreview = cleanPreview.length > 40 ? cleanPreview.slice(0, 40) + '...' : cleanPreview;
-        toast.textContent = title + ' ';
+        const shortPreview = cleanPreview.length > 36 ? cleanPreview.slice(0, 36) + '...' : cleanPreview;
+        
+        toast.innerHTML = '';
+        
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'voyager-toast-icon';
+        iconSpan.textContent = '✓';
+        toast.appendChild(iconSpan);
+
+        const textSpan = document.createElement('span');
+        textSpan.textContent = title;
+        toast.appendChild(textSpan);
+
         if (shortPreview) {
           const codeSpan = document.createElement('span');
           codeSpan.className = 'voyager-toast-code';
           codeSpan.textContent = shortPreview;
           toast.appendChild(codeSpan);
         }
+
         toast.classList.add('show');
         if (toastTimer) clearTimeout(toastTimer);
         toastTimer = setTimeout(() => {
@@ -282,8 +309,8 @@
           const tex = extractLatex(el);
           if (tex) {
             el.setAttribute('data-voyager-latex', tex);
-            el.setAttribute('data-voyager-badge', '📋 点击复制 LaTeX');
-            el.setAttribute('title', '点击复制纯 LaTeX 源码\n按住 Option (Alt) 点击复制带 $$ 定界符源码');
+            el.setAttribute('data-voyager-badge', '📋 复制 LaTeX');
+            el.removeAttribute('title');
             el.setAttribute('data-voyager-ready', '1');
           }
         });
@@ -396,17 +423,17 @@
           if (isBlock) {
             container.setAttribute(
               'data-voyager-badge',
-              e.altKey ? '✓ 已复制 $$...$$' : '✓ 已复制 LaTeX 源码'
+              e.altKey ? '✓ 已复制 $$' : '✓ 已复制'
             );
           }
-          showToast(e.altKey ? '✓ 已复制带定界符公式:' : '✓ 已复制纯 LaTeX 源码:', finalCopy);
+          showToast(e.altKey ? '已复制带定界符公式' : '已复制 LaTeX 源码', finalCopy);
 
           setTimeout(() => {
             container.classList.remove('voyager-copied');
             if (isBlock) {
-              container.setAttribute('data-voyager-badge', '📋 点击复制 LaTeX');
+              container.setAttribute('data-voyager-badge', '📋 复制 LaTeX');
             }
-          }, 1500);
+          }, 1400);
         } catch (err) {}
       },
       true
