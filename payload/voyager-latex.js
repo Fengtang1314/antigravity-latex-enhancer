@@ -54,8 +54,9 @@
         text-align: center !important;
         width: 100% !important;
         box-sizing: border-box !important;
-        margin: 14px 0 !important;
-        padding: 10px 16px !important;
+        margin: 18px 0 !important;
+        padding: 16px 22px !important;
+        line-height: normal !important;
         background: transparent !important;
         border: 1px solid transparent !important;
         border-radius: 8px !important;
@@ -71,7 +72,13 @@
         justify-content: center !important;
         align-items: center !important;
         text-align: center !important;
+        line-height: normal !important;
         margin: 0 auto !important;
+      }
+
+      /* 针对矩阵与对齐环境 (aligned / matrix / cases) 提供安全外边距缓冲 */
+      .katex .mtable {
+        margin: 4px 0 !important;
       }
 
       /* 悬浮状态：微淡温润底色与 Claude 陶土橙细致边框 (#D97757) */
@@ -87,8 +94,8 @@
       .voyager-math-block::after {
         content: attr(data-voyager-badge);
         position: absolute;
-        top: 6px;
-        right: 8px;
+        top: 8px;
+        right: 10px;
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
         font-size: 11px;
         font-weight: 500;
