@@ -154,10 +154,17 @@ async function install(appPath) {
 
     // 隐患 4 修复：仅当当前包尚未注入 Voyager 时，才将当前包作为冷备
     const backupPath = asarPath + '.before-voyager';
+    const infoPlistPath = path.join(appPath, 'Contents', 'Info.plist');
+    const infoPlistBackup = infoPlistPath + '.before-voyager';
+
     if (!hasExistingVoyager) {
         console.log(`[备份] 检测到当前包为纯净状态，正在建立独立冷备: ${path.basename(backupPath)} ...`);
         fs.copyFileSync(asarPath, backupPath);
-        console.log(`[备份] 冷备已建立（绝不触碰官方原始 app.asar.bak）！`);
+        if (fs.existsSync(infoPlistPath) && !fs.existsSync(infoPlistBackup)) {
+            fs.copyFileSync(infoPlistPath, infoPlistBackup);
+            console.log(`[备份] Info.plist 配置冷备已建立: ${path.basename(infoPlistBackup)}`);
+        }
+        console.log(`[备份] 独立冷备已安全就绪（绝不触碰官方原始 app.asar.bak）！`);
     } else {
         console.log(`[备份] 当前包已存在 Voyager 模块，执行热更新，保留先前建立的纯净冷备。`);
     }
@@ -245,6 +252,10 @@ async function uninstall(appPath) {
                 if (fs.existsSync(backupPath)) {
                     fs.unlinkSync(backupPath);
                 }
+                const infoPlistBackup = path.join(appPath, 'Contents', 'Info.plist.before-voyager');
+                if (fs.existsSync(infoPlistBackup)) {
+                    fs.unlinkSync(infoPlistBackup);
+                }
                 console.log(`[√] 代码级精准剔除完成！已无痕剥离 Voyager 代码，保留其余所有环境。`);
                 return;
             }
@@ -253,11 +264,19 @@ async function uninstall(appPath) {
     }
 
     // 兜底方案：若解包或打包失败，采用冷备文件快速覆盖
+    const infoPlistPath = path.join(appPath, 'Contents', 'Info.plist');
+    const infoPlistBackup = infoPlistPath + '.before-voyager';
     if (fs.existsSync(backupPath)) {
         console.log(`[兜底还原] 正在使用冷备文件恢复...`);
         fs.copyFileSync(backupPath, asarPath);
         fs.unlinkSync(backupPath);
-        syncAsarIntegrityToInfoPlist(appPath, asarPath);
+        if (fs.existsSync(infoPlistBackup)) {
+            fs.copyFileSync(infoPlistBackup, infoPlistPath);
+            fs.unlinkSync(infoPlistBackup);
+            console.log(`[兜底还原] Info.plist 已还原至冷备配置。`);
+        } else {
+            syncAsarIntegrityToInfoPlist(appPath, asarPath);
+        }
         resignAppOnMac(appPath);
         console.log(`[√] 已通过冷备文件恢复至初始纯净状态！`);
         return;
