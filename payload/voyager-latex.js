@@ -25,15 +25,39 @@
   try {
     const STYLE_ID = 'voyager-latex-styles';
     const CSS_CONTENT = `
-      /* ========== 块级公式 (.katex-display / .voyager-math-block) 代码块卡片 ========== */
+      /* 核心排版修复：彻底隐藏 KaTeX 的 MathML 语义层，杜绝在 Chromium 中占据左侧空间导致公式右偏 */
+      .katex .katex-mathml,
+      .katex-display .katex-mathml,
+      .voyager-math-block .katex-mathml {
+        position: absolute !important;
+        clip: rect(1px, 1px, 1px, 1px) !important;
+        clip-path: inset(50%) !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        border: 0 !important;
+        overflow: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        white-space: nowrap !important;
+      }
+
+      /* ========== 块级公式 (.katex-display / .voyager-math-block) ========== */
+      /* 常态：完全透明，无灰色边框，无深底色，保证正文排版优雅纯净，完美居中 */
       .katex-display,
       .voyager-math-block {
         position: relative !important;
-        display: block !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
         margin: 12px 0 !important;
-        padding: 14px 18px !important;
-        background: rgba(128, 128, 128, 0.08) !important;
-        border: 1px solid rgba(128, 128, 128, 0.22) !important;
+        padding: 10px 16px !important;
+        background: transparent !important;
+        border: 1px solid transparent !important;
         border-radius: 8px !important;
         overflow-x: auto !important;
         overflow-y: hidden !important;
@@ -42,14 +66,23 @@
         user-select: text !important;
       }
 
-      .katex-display:hover,
-      .voyager-math-block:hover {
-        background: rgba(77, 159, 255, 0.09) !important;
-        border-color: rgba(77, 159, 255, 0.55) !important;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12) !important;
+      .katex-display > .katex {
+        display: inline-flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+        margin: 0 auto !important;
       }
 
-      /* 右上角悬浮提示角标 */
+      /* 悬浮状态：鼠标移入时才淡出细腻半透明卡片与提示 */
+      .katex-display:hover,
+      .voyager-math-block:hover {
+        background: rgba(128, 128, 128, 0.06) !important;
+        border-color: rgba(128, 128, 128, 0.22) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+      }
+
+      /* 右上角悬浮提示角标：常态绝对隐藏 (opacity: 0)，仅在 hover 时淡入 */
       .katex-display::after,
       .voyager-math-block::after {
         content: attr(data-voyager-badge);
@@ -60,9 +93,9 @@
         font-size: 11px;
         font-weight: 500;
         line-height: 1.4;
-        padding: 2px 7px;
+        padding: 2px 8px;
         border-radius: 4px;
-        background: rgba(30, 30, 30, 0.85);
+        background: rgba(30, 32, 36, 0.88);
         color: #e6edf3;
         border: 1px solid rgba(255, 255, 255, 0.16);
         opacity: 0;
@@ -82,8 +115,8 @@
       /* 复制成功状态高亮反馈 */
       .katex-display.voyager-copied,
       .voyager-math-block.voyager-copied {
-        border-color: rgba(46, 204, 113, 0.85) !important;
-        background: rgba(46, 204, 113, 0.12) !important;
+        border-color: rgba(46, 204, 113, 0.8) !important;
+        background: rgba(46, 204, 113, 0.08) !important;
       }
       .katex-display.voyager-copied::after,
       .voyager-math-block.voyager-copied::after {
@@ -93,31 +126,32 @@
         border-color: rgba(255, 255, 255, 0.3) !important;
       }
 
-      /* ========== 行内公式 (:not(.katex-display) > .katex) 胶囊卡片 ========== */
+      /* ========== 行内公式 (:not(.katex-display) > .katex) ========== */
+      /* 常态：完全融入正文排版，零底色、零边框、inline 流式展示，绝不破坏行高与对齐 */
       :not(.katex-display) > .katex,
       .voyager-math-inline {
-        position: relative;
-        display: inline-block;
-        padding: 1px 6px !important;
-        margin: 0 2px !important;
-        background: rgba(128, 128, 128, 0.12) !important;
-        border: 1px solid rgba(128, 128, 128, 0.22) !important;
-        border-radius: 5px !important;
+        position: relative !important;
+        display: inline !important;
+        padding: 0 2px !important;
+        margin: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 4px !important;
         cursor: pointer !important;
-        transition: background-color 0.16s ease, border-color 0.16s ease !important;
-        vertical-align: baseline;
+        transition: background-color 0.15s ease, box-shadow 0.15s ease !important;
+        vertical-align: baseline !important;
       }
 
+      /* 行内公式悬浮状态：微弱浅蓝高亮底色，提示可点击复制 */
       :not(.katex-display) > .katex:hover,
       .voyager-math-inline:hover {
-        background: rgba(77, 159, 255, 0.16) !important;
-        border-color: rgba(77, 159, 255, 0.65) !important;
+        background: rgba(77, 159, 255, 0.14) !important;
       }
 
+      /* 行内公式复制成功 */
       :not(.katex-display) > .katex.voyager-copied,
       .voyager-math-inline.voyager-copied {
         background: rgba(46, 204, 113, 0.22) !important;
-        border-color: rgba(46, 204, 113, 0.88) !important;
       }
 
       /* 全局悬浮反馈 Toast */
