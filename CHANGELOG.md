@@ -4,6 +4,22 @@
 
 ---
 
+## [2.2.0] - 2026-10-17
+
+### 🚀 核心排版与防挤压重构 (Anti-Crowding & Elastic Spacing)
+- **相邻块级公式强力弹开引擎 (Adjacent Math Repulsion)**：
+  - 新增 `.katex-display + .katex-display` 与 `.voyager-math-stacked` 样式规则，当大模型连续多行输出 `$$` 独立公式而未留空行时，在渲染层物理打破浏览器的外边距合并（Margin Collapse），强制施加 **28px 超大呼吸间距**，彻底杜绝多公式纵向挤压碰撞。
+- **正文段落双向弹性安全区 (Prose-Math Barrier)**：
+  - 为 `<p>` 段落与公式交界处注入 **20px 弹性隔离盾**，防止密集推导时正文文字与公式“贴脸”。
+- **行内复杂公式防爆防刮擦 (Inline Strut Shield)**：
+  - 为行内公式（`:not(.katex-display) > .katex`）注入微间距缓冲与 `line-height: normal`，防止包含微商、相量点、上下标的长符号刮擦上下行正文。
+- **DOM 级智能堆叠公式探测器**：
+  - 在 JavaScript 注入层增加对紧邻前后兄弟公式节点的智能感知，自动挂载 `.voyager-math-stacked` 弹性标记，实现 CSS 与 JS 的双重保障。
+- **矩阵与多行对齐外边距加固**：
+  - 将 `.katex .mtable` 垂直外边距由 4px 提升至 6px，配合 `\jot` 机制进一步提升多行对齐时的纵向舒展度。
+
+---
+
 ## [2.1.0] - 2026-10-15
 
 ### 🎨 界面与美学升级 (Claude Minimalist Edition)

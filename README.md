@@ -59,7 +59,7 @@
 普通用户无需手动执行任何繁琐命令，跟随以下三步即可轻松搞定：
 
 #### 步骤 1：下载安装包
-前往仓库右侧的 **[Releases 发行版页面](https://github.com/Fengtang1314/antigravity-latex-enhancer/releases/latest)**，下载预打包好的 **`antigravity-latex-enhancer-v2.1.0.zip`**，下载后双击解压为一个文件夹。
+前往仓库右侧的 **[Releases 发行版页面](https://github.com/Fengtang1314/antigravity-latex-enhancer/releases/latest)**，下载预打包好的 **`antigravity-latex-enhancer-v2.2.0.zip`**，下载后双击解压为一个文件夹。
 
 > 💡 **开发者方式**：也可以直接克隆本仓库：
 > ```bash
@@ -102,6 +102,14 @@
   需要直接贴进 Markdown 或论文草稿？按住 `Option (Alt)` 点击公式，自动为你智能包装好 `$$...$$`（块级）或 `$...$`（行内）。
 * **选区 Cmd+C 智能拦截还原**：
   鼠标大面积划选包含中文字符和公式的整段回答按 `Cmd + C` 时，自动穿透 KaTeX 内部结构，将公式节点无损还原为干净的 Markdown TeX 源码，**彻底告别原生复制产生的重影字符与乱码**。
+
+### 功能三：智能弹性防挤压引擎 (v2.2.0 全新重构)
+* **相邻堆叠公式强力弹开 (Adjacent Math Repulsion)**：
+  当大模型在长篇学术推导中连续输出多个 `$$` 独立公式而未敲空行时，在渲染层物理打破浏览器的外边距合并（Margin Collapse），强制施加 **28px 超大呼吸间距**，彻底杜绝连续公式纵向挤压碰撞。
+* **正文与公式弹性隔离盾 (Prose-Math Barrier)**：
+  在段落 `<p>` 与公式交界处注入 **20px 缓冲安全区**，防止密集推导时正文文字与公式“贴脸”，带来书本印刷般的通透排版。
+* **行内复杂公式安全防爆**：
+  为行内公式赋予专属微边距与行高保护，杜绝复杂相量上尖标、点导数、复合上下标刮擦上下行正文字符。
 
 ---
 

@@ -1,6 +1,6 @@
 /**
  * ==============================================================================
- * Antigravity Voyager LaTeX Enhancer (v2.1 对抗性加固终极版)
+ * Antigravity LaTeX Enhancer (v2.2.0 全链路防挤压与弹性间距版)
  * 灵感来源: Gemini Voyager & 016/Antigravity-Better
  * 
  * 核心特性与架构加固:
@@ -67,6 +67,31 @@
         user-select: text !important;
       }
 
+      /* 核心防挤压引擎：连续块级公式堆叠时强力弹开 28px 超大呼吸间距，彻底打破外边距合并 */
+      .katex-display + .katex-display,
+      .voyager-math-block + .voyager-math-block,
+      .katex-display + .voyager-math-block,
+      .voyager-math-block + .katex-display,
+      .voyager-math-stacked {
+        margin-top: 28px !important;
+      }
+
+      /* 正文段落与公式之间的双向弹性安全区，防止文字贴脸 */
+      p + .katex-display,
+      p + .voyager-math-block {
+        margin-top: 20px !important;
+      }
+      .katex-display + p,
+      .voyager-math-block + p {
+        margin-top: 20px !important;
+      }
+
+      /* 引用块/提示框内部公式的边距适配 */
+      blockquote .katex-display,
+      blockquote .voyager-math-block {
+        margin: 14px 0 !important;
+      }
+
       .katex-display > .katex {
         display: inline-flex !important;
         justify-content: center !important;
@@ -78,7 +103,7 @@
 
       /* 针对矩阵与对齐环境 (aligned / matrix / cases) 提供安全外边距缓冲 */
       .katex .mtable {
-        margin: 4px 0 !important;
+        margin: 6px 0 !important;
       }
 
       /* 悬浮状态：微淡温润底色与 Claude 陶土橙细致边框 (#D97757) */
@@ -140,14 +165,15 @@
       .voyager-math-inline {
         position: relative !important;
         display: inline !important;
-        padding: 0 2px !important;
-        margin: 0 !important;
+        padding: 0 2.5px !important;
+        margin: 0 1px !important;
         background: transparent !important;
         border: none !important;
         border-radius: 3px !important;
         cursor: pointer !important;
         transition: background-color 0.15s ease !important;
         vertical-align: baseline !important;
+        line-height: normal !important;
       }
 
       /* 行内公式悬浮状态：微弱陶土橙浅底色 */
@@ -320,6 +346,20 @@
             el.removeAttribute('title');
             el.setAttribute('data-voyager-ready', '1');
           }
+          // 智能防挤压检测：若前面紧邻另一个公式块，主动标记 stacked 施加 28px 弹性间距
+          try {
+            const prev = el.previousElementSibling;
+            if (prev) {
+              if (prev.classList.contains('katex-display') || prev.classList.contains('voyager-math-block') || (prev.querySelector && prev.querySelector('.katex-display, .voyager-math-block'))) {
+                el.classList.add('voyager-math-stacked');
+              }
+            } else if (el.parentElement) {
+              const pPrev = el.parentElement.previousElementSibling;
+              if (pPrev && pPrev.querySelector && pPrev.querySelector('.katex-display, .voyager-math-block')) {
+                el.classList.add('voyager-math-stacked');
+              }
+            }
+          } catch (_) {}
         });
 
         const inlineNodes = root.querySelectorAll ? root.querySelectorAll(':not(.katex-display) > .katex:not([data-voyager-ready])') : [];
