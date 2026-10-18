@@ -250,7 +250,11 @@ function run(root, mode, env = {}) {
 
   console.log('\n========================================');
   console.log(`ENGINE TESTS: ${pass} passed, ${fail} failed`);
-  if (fail) console.log('FAILURES:\n - ' + failures.join('\n - '));
+  if (fail) {
+    console.log('FAILURES:\n - ' + failures.join('\n - '));
+  } else {
+    try { fs.rmSync(BASE, { recursive: true, force: true }); } catch (e) {}
+  }
   process.exit(fail ? 1 : 0);
 })().catch((e) => {
   console.error('ENGINE TEST HARNESS ERROR', e);
