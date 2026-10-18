@@ -61,7 +61,7 @@
 普通用户无需执行繁琐的手动命令，跟随以下步骤即可完成：
 
 #### 步骤 1：下载安装包
-前往仓库右侧的 **[Releases 发行版页面](https://github.com/Fengtang1314/antigravity-latex-enhancer/releases/latest)**，下载预打包好的 **`antigravity-latex-enhancer-v2.3.0.zip`**，解压为一个文件夹。
+前往仓库右侧的 **[Releases 发行版页面](https://github.com/Fengtang1314/antigravity-latex-enhancer/releases/latest)**，下载预打包好的 **`antigravity-latex-enhancer-v2.3.1.zip`**，解压为一个文件夹。
 
 > 💡 **开发者方式**：也可以克隆本仓库并在本地执行测试：
 > ```bash

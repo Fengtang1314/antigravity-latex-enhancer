@@ -220,6 +220,34 @@ function run(root, mode, env = {}) {
     check('H3 修复：未把旧版 2.24.0 plist 覆盖到 2.25.0 应用上', curPlist.includes('2.25.0'));
   }
 
+  console.log('\n=== E12 bloated asar self-healing & shrink acceptance ===');
+  {
+    const root = await setupCase('e12', { withUnpacked: true });
+    const resDir = path.join(root, 'app', 'Antigravity.app', 'Contents', 'Resources');
+    const asarFile = path.join(resDir, 'app.asar');
+    const bakFile = path.join(resDir, 'app.asar.bak');
+
+    // 复制当前带 unpack 规则的 asar 作为官方原始冷备 bakFile
+    fs.copyFileSync(asarFile, bakFile);
+
+    // 重新制作一个未配置 unpackDir 且注入 >1.2MB 填充数据的虚胖 asar
+    const srcDir = path.join(root, 'src');
+    const dummyBigFile = path.join(srcDir, 'node_modules', 'chrome-devtools-mcp', 'build', 'big_payload.dat');
+    fs.writeFileSync(dummyBigFile, Buffer.alloc(1.2 * 1024 * 1024, 0x42));
+    await asarModule.createPackageWithOptions(srcDir, asarFile, {}); // 无 unpack 规则
+
+    const bloatedSize = fs.statSync(asarFile).size;
+    check('bloated asar created > 1MB', bloatedSize > 1024 * 1024);
+
+    // 运行 install：自愈机制应当从 bakFile 提取 unpack 契约，重新打包并剥离 big_payload.dat
+    // 归档体积大幅收缩，但不应触发体积异常报错
+    const r = run(root, 'install');
+    check('E12: exit code 0 on unpack self-healing shrink', r.status === 0, r.stderr);
+    check('E12: self-healing and shrink logged', r.stdout.includes('[自愈]') && r.stdout.includes('[消肿]'));
+    const newSize = fs.statSync(asarFile).size;
+    check('E12: archive shrank safely', newSize < bloatedSize * 0.5);
+  }
+
   console.log('\n========================================');
   console.log(`ENGINE TESTS: ${pass} passed, ${fail} failed`);
   if (fail) console.log('FAILURES:\n - ' + failures.join('\n - '));

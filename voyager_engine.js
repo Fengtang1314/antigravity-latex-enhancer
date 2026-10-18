@@ -315,7 +315,7 @@ function rollback(appPath, backupAsar, backupPlist) {
 
 async function install(appPath) {
     console.log('======================================================');
-    console.log(' 🚀 正在向 Antigravity 安装 Voyager LaTeX 公式增强 v2.3.0');
+    console.log(' 🚀 正在向 Antigravity 安装 Voyager LaTeX 公式增强 v2.3.1');
     console.log('======================================================');
     console.log(`[应用路径] ${appPath}`);
 
@@ -413,8 +413,28 @@ async function install(appPath) {
 
     const origSize = fs.statSync(asarPath).size;
     const tmpSize = fs.statSync(tmpAsarPath).size;
-    if (tmpSize < 500 || (origSize > 1024 * 1024 && tmpSize < origSize * 0.3)) {
-        console.error(`[错误] 生成的归档包体积异常 (原大小: ${origSize}, 新大小: ${tmpSize} bytes)，已中止替换以保护应用！`);
+
+    // 体积异常保护（防止打包截断或空包损坏应用）
+    // 说明：正常 Antigravity 官方 app.asar 约 4.5MB。若历史版本因丢失 unpacked 规则导致
+    // chrome-devtools-mcp (~13.6MB) 误打包进 asar，asar 会虚胖至 ~18MB。
+    // 在本次自愈成功恢复 unpack 契约后，外部文件被剥离至 app.asar.unpacked，
+    // asar 体积会健康回落至 ~4.8MB (~26% 原体积)，这是完全符合预期的自愈现象。
+    let minAllowedSize = 500;
+    if (origSize > 1024 * 1024) {
+        if (unpackPattern) {
+            // 当启用/自愈 unpacked 契约时，外部模块被剥离至 app.asar.unpacked，
+            // 归档体积大幅缩减（如 Antigravity 从 18.1MB 回落至 4.8MB）属于预期内的健康消肿。
+            minAllowedSize = 500;
+            if (tmpSize < origSize * 0.8) {
+                console.log(`[消肿] 契约自愈生效：外部模块已剥离至 unpacked 目录，归档体积从 ${(origSize / 1024 / 1024).toFixed(2)} MB 健康回落至 ${(tmpSize / 1024 / 1024).toFixed(2)} MB。`);
+            }
+        } else {
+            minAllowedSize = Math.max(1024 * 1024, Math.floor(origSize * 0.3));
+        }
+    }
+
+    if (tmpSize < minAllowedSize) {
+        console.error(`[错误] 生成的归档包体积异常 (原大小: ${origSize}, 新大小: ${tmpSize} bytes，安全阈值: ${minAllowedSize})，已中止替换以保护应用！`);
         fs.unlinkSync(tmpAsarPath);
         process.exit(1);
     }
@@ -539,6 +559,19 @@ async function uninstall(appPath) {
             fs.rmSync(tempDir, { recursive: true, force: true });
 
             if (fs.existsSync(tmpAsarPath)) {
+                const origSize = fs.statSync(asarPath).size;
+                const tmpSize = fs.statSync(tmpAsarPath).size;
+                let minAllowedSize = 500;
+                if (origSize > 1024 * 1024) {
+                    minAllowedSize = unpackPattern
+                        ? 500
+                        : Math.max(1024 * 1024, Math.floor(origSize * 0.3));
+                }
+                if (tmpSize < minAllowedSize) {
+                    fs.unlinkSync(tmpAsarPath);
+                    throw new Error(`卸载重新打包体积异常 (原大小: ${origSize}, 新大小: ${tmpSize} bytes)`);
+                }
+
                 const targetDir = path.dirname(asarPath);
                 const stagedPath = path.join(targetDir, `app.asar.tmp_${Date.now()}`);
                 fs.copyFileSync(tmpAsarPath, stagedPath);
