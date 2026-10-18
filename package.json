@@ -1,0 +1,18 @@
+{
+  "name": "antigravity-latex-enhancer",
+  "version": "2.3.0",
+  "description": "Antigravity Voyager LaTeX Enhancer for macOS",
+  "main": "voyager_engine.js",
+  "scripts": {
+    "test": "node tests/run_all.js"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "@electron/asar": "4.3.1"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.3"
+  }
+}

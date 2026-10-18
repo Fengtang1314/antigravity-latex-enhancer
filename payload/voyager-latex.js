@@ -48,9 +48,7 @@
       .katex-display,
       .voyager-math-block {
         position: relative !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
+        display: block !important;
         text-align: center !important;
         width: 100% !important;
         box-sizing: border-box !important;
@@ -65,6 +63,14 @@
         cursor: pointer !important;
         transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease !important;
         user-select: text !important;
+      }
+
+      /* 内层公式容器：保持初始对齐并在超宽时允许安全横向滚动，杜绝负偏移左截断 */
+      .katex-display > .katex,
+      .voyager-math-block > .katex {
+        display: inline-block !important;
+        text-align: initial !important;
+        max-width: 100% !important;
       }
 
       /* 核心防挤压引擎：连续块级公式堆叠时强力弹开 28px 超大呼吸间距，彻底打破外边距合并 */
@@ -426,11 +432,24 @@
       'click',
       async function (e) {
         try {
+          // 对抗加固 M2：放行所有原生可编辑区域、输入控件、超链接以及功能按钮
+          const path = typeof e.composedPath === 'function' ? e.composedPath() : [e.target];
+          for (let i = 0; i < path.length; i++) {
+            const el = path[i];
+            if (el && el.nodeType === 1) {
+              if (
+                el.isContentEditable ||
+                (typeof el.closest === 'function' && el.closest('[contenteditable="true"], [contenteditable=""], a[href], button, [role="button"], input, textarea, select')) ||
+                /^(INPUT|TEXTAREA|SELECT|A|BUTTON)$/.test(el.tagName)
+              ) {
+                return;
+              }
+            }
+          }
+
           const sel = window.getSelection();
           if (sel && sel.toString().trim().length > 0) return;
 
-          // 核心加固：使用 composedPath() 穿透 Shadow DOM，避免 e.target 被重定向为 Shadow Host
-          const path = (typeof e.composedPath === 'function') ? e.composedPath() : [e.target];
           let target = null;
           let blockContainer = null;
 
@@ -456,7 +475,7 @@
           if (!rawLatex) return;
 
           e.preventDefault();
-          e.stopPropagation();
+          // 注意：不再调用 e.stopPropagation()，杜绝劫持宿主其它事件链路
 
           const finalCopy = e.altKey
             ? isBlock
@@ -486,10 +505,9 @@
       true
     );
 
-    // 7. 拦截 Cmd+C 框选复制：将选区内的公式无缝还原为 Markdown 源码
+    // 7. 拦截 Cmd+C 框选复制：将选区内的公式无缝还原为 Markdown 源码，并严格保留段落换行与列表结构
     document.addEventListener('copy', function (e) {
       try {
-        // 对抗加固：如果用户在输入框、文本域或可编辑区域操作，绝对不干预原生输入复制
         const active = document.activeElement;
         if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
           return;
@@ -505,7 +523,7 @@
         frag.querySelectorAll('.katex-display, .voyager-math-block').forEach((el) => {
           const tex = extractLatex(el);
           if (tex) {
-            const replacement = document.createTextNode(`\n$$\n${tex}\n$$\n`);
+            const replacement = document.createTextNode(`\n\n$$\n${tex}\n$$\n\n`);
             el.parentNode.replaceChild(replacement, el);
           }
         });
@@ -518,9 +536,42 @@
           }
         });
 
-        const tempDiv = document.createElement('div');
-        tempDiv.appendChild(frag);
-        const cleanText = tempDiv.textContent || '';
+        // 对抗加固 M1：递归序列化 DOM 片段，对块级元素与换行注入物理换行，杜绝 textContent 粘连
+        function serializeFragmentToText(node) {
+          let text = '';
+          function walk(n) {
+            if (n.nodeType === 3) { // TEXT_NODE
+              text += n.nodeValue;
+              return;
+            }
+            if (n.nodeType === 11) { // DOCUMENT_FRAGMENT_NODE
+              for (let child = n.firstChild; child; child = child.nextSibling) {
+                walk(child);
+              }
+              return;
+            }
+            if (n.nodeType !== 1) return; // ELEMENT_NODE
+            const tag = n.tagName.toUpperCase();
+            if (tag === 'BR') {
+              text += '\n';
+              return;
+            }
+            const isBlock = /^(P|DIV|H[1-6]|LI|TR|BLOCKQUOTE|PRE|HR)$/.test(tag);
+            if (isBlock && text.length > 0 && !text.endsWith('\n')) {
+              text += '\n';
+            }
+            for (let child = n.firstChild; child; child = child.nextSibling) {
+              walk(child);
+            }
+            if (isBlock && text.length > 0 && !text.endsWith('\n')) {
+              text += '\n';
+            }
+          }
+          walk(node);
+          return text.replace(/\n{3,}/g, '\n\n').trim();
+        }
+
+        const cleanText = serializeFragmentToText(frag);
         if (cleanText && e.clipboardData) {
           e.clipboardData.setData('text/plain', cleanText);
           e.preventDefault();

@@ -4,3 +4,7 @@ _temp_extract/
 _temp_pack/
 node_modules/
 *.bak
+.review-scratch/
+tests/fixtures/
+*.zip
+
