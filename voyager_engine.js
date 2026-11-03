@@ -136,7 +136,7 @@ function detectUnpackDirPattern(unpackedPaths) {
     const roots = new Set();
     for (const p of unpackedPaths) {
         const parts = p.split('/');
-        if (parts[0] === 'node_modules' && parts.length > 2) {
+        if (parts[0] === 'node_modules' && parts.length >= 2) {
             roots.add(`node_modules/${parts[1]}`);
         } else if (parts.length > 1) {
             roots.add(parts[0]);
@@ -245,6 +245,48 @@ function syncAsarIntegrityToInfoPlist(appPath, asarPath) {
     }
 }
 
+function unlockPathSync(targetPath) {
+    if (!targetPath || !fs.existsSync(targetPath)) return;
+    try {
+        if (process.platform === 'darwin') {
+            runCommandSync(`chflags nouchg "${targetPath}" 2>/dev/null || true`);
+        }
+        fs.chmodSync(targetPath, 0o666);
+    } catch (e) {}
+}
+
+/**
+ * 在 macOS 代码签名时临时将备份文件移至外部，防止备份被 seal 进 CodeResources 导致后续卸载报警
+ * 签名失败时自动恢复，签名成功时彻底销毁
+ */
+function stageBackupsOut(files) {
+    const tempStage = path.join(os.tmpdir(), `voyager_staged_backups_${Date.now()}`);
+    fs.mkdirSync(tempStage, { recursive: true });
+    const moved = [];
+    for (const f of files) {
+        if (f && fs.existsSync(f)) {
+            const dest = path.join(tempStage, path.basename(f));
+            unlockPathSync(f);
+            fs.renameSync(f, dest);
+            moved.push({ original: f, staged: dest });
+        }
+    }
+    return {
+        restore() {
+            for (const item of moved) {
+                if (fs.existsSync(item.staged)) {
+                    unlockPathSync(item.original);
+                    fs.renameSync(item.staged, item.original);
+                }
+            }
+            try { fs.rmSync(tempStage, { recursive: true, force: true }); } catch (e) {}
+        },
+        cleanup() {
+            try { fs.rmSync(tempStage, { recursive: true, force: true }); } catch (e) {}
+        }
+    };
+}
+
 /**
  * 重签名并执行严格检验（H4 加固）
  */
@@ -315,7 +357,7 @@ function rollback(appPath, backupAsar, backupPlist) {
 
 async function install(appPath) {
     console.log('======================================================');
-    console.log(' 🚀 正在向 Antigravity 安装 Voyager LaTeX 公式增强 v2.3.1');
+    console.log(' 🚀 正在向 Antigravity 安装 Voyager LaTeX 公式增强 v2.3.2');
     console.log('======================================================');
     console.log(`[应用路径] ${appPath}`);
 
@@ -449,11 +491,34 @@ async function install(appPath) {
                 fs.unlinkSync(tmpAsarPath);
                 process.exit(1);
             }
+            if (newHeader.files && newHeader.files.node_modules && newHeader.files.node_modules.files) {
+                const elNode = newHeader.files.node_modules.files['electron-log'];
+                if (elNode && (elNode.unpacked || (elNode.files && Object.values(elNode.files).some(f => f.unpacked)))) {
+                    console.error(`[致命错误] 核心模块 electron-log 被错误标记为 unpacked！已中止部署。`);
+                    fs.unlinkSync(tmpAsarPath);
+                    process.exit(1);
+                }
+            }
             console.log(`[契约校验] 成功核验 unpacked 外部条目保留 (${newUnpacked.length} 项)！`);
         } catch (e) {
             console.error(`[错误] 校验归档头部失败: ${e.message}`);
             fs.unlinkSync(tmpAsarPath);
             process.exit(1);
+        }
+    }
+
+    const tmpUnpacked = tmpAsarPath + '.unpacked';
+    const targetUnpacked = asarPath + '.unpacked';
+    if (fs.existsSync(tmpUnpacked)) {
+        try {
+            if (!fs.existsSync(targetUnpacked)) {
+                fs.mkdirSync(targetUnpacked, { recursive: true });
+            }
+            fs.cpSync(tmpUnpacked, targetUnpacked, { recursive: true, force: true });
+            fs.rmSync(tmpUnpacked, { recursive: true, force: true });
+            console.log(`[同步] 已同步外部解包条目至 app.asar.unpacked/`);
+        } catch (e) {
+            console.warn(`[警告] 同步 .unpacked 目录异常: ${e.message}`);
         }
     }
 
@@ -583,11 +648,14 @@ async function uninstall(appPath) {
                 fs.renameSync(stagedPath, asarPath);
 
                 syncAsarIntegrityToInfoPlist(appPath, asarPath);
-                resignAppOnMac(appPath);
 
-                if (fs.existsSync(backupAsar)) fs.unlinkSync(backupAsar);
-                if (fs.existsSync(backupPlist)) fs.unlinkSync(backupPlist);
-                if (fs.existsSync(metaPath)) fs.unlinkSync(metaPath);
+                const stage = stageBackupsOut([backupAsar, backupPlist, metaPath]);
+                const signOk = resignAppOnMac(appPath);
+                if (!signOk) {
+                    stage.restore();
+                    throw new Error('应用 macOS 重新签名或验证未通过');
+                }
+                stage.cleanup();
 
                 console.log(`[√] 代码级精准剔除完成！已无痕剥离 Voyager 代码，保留其余所有环境与契约。`);
                 return;
@@ -624,13 +692,14 @@ async function uninstall(appPath) {
             syncAsarIntegrityToInfoPlist(appPath, asarPath);
         }
 
-        resignAppOnMac(appPath);
-
-        try {
-            if (fs.existsSync(backupAsar)) fs.unlinkSync(backupAsar);
-            if (fs.existsSync(backupPlist)) fs.unlinkSync(backupPlist);
-            if (fs.existsSync(metaPath)) fs.unlinkSync(metaPath);
-        } catch (e) {}
+        const stage = stageBackupsOut([backupAsar, backupPlist, metaPath]);
+        const signOk = resignAppOnMac(appPath);
+        if (!signOk) {
+            stage.restore();
+            console.error(`[致命错误] 兜底还原重新签名未通过！已保留冷备文件以供恢复。`);
+            process.exit(1);
+        }
+        stage.cleanup();
 
         console.log(`[√] 已通过冷备文件安全恢复至初始纯净状态！`);
         return;
@@ -639,25 +708,39 @@ async function uninstall(appPath) {
     console.log(`[提示] 未发现注入的 Voyager 模块或已处于还原状态。`);
 }
 
-const mode = process.argv[2] || 'install';
-const appPath = findAppPath();
+module.exports = {
+    MARKER_START,
+    MARKER_END,
+    cleanVoyagerBlock,
+    detectUnpackDirPattern,
+    resolveUnpackPattern,
+    stageBackupsOut,
+    rollback,
+    install,
+    uninstall
+};
 
-if (!appPath) {
-    console.error('[错误] 未能自动定位到 /Applications/Antigravity.app。');
-    process.exit(1);
-}
+if (require.main === module) {
+    const mode = process.argv[2] || 'install';
+    const appPath = findAppPath();
 
-(async () => {
-    try {
-        if (mode === 'install') {
-            await install(appPath);
-        } else if (mode === 'uninstall') {
-            await uninstall(appPath);
-        } else {
-            console.log(`未知模式: ${mode}，支持 install / uninstall`);
-        }
-    } catch (err) {
-        console.error(`[未捕获异常] ${err.stack || err.message}`);
+    if (!appPath) {
+        console.error('[错误] 未能自动定位到 /Applications/Antigravity.app。');
         process.exit(1);
     }
-})();
+
+    (async () => {
+        try {
+            if (mode === 'install') {
+                await install(appPath);
+            } else if (mode === 'uninstall') {
+                await uninstall(appPath);
+            } else {
+                console.log(`未知模式: ${mode}，支持 install / uninstall`);
+            }
+        } catch (err) {
+            console.error(`[未捕获异常] ${err.stack || err.message}`);
+            process.exit(1);
+        }
+    })();
+}

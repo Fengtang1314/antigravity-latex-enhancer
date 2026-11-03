@@ -248,6 +248,23 @@ function run(root, mode, env = {}) {
     check('E12: archive shrank safely', newSize < bloatedSize * 0.5);
   }
 
+  console.log('\n=== E13 asarUnpack pattern precision & electron-log protection ===');
+  {
+    const { detectUnpackDirPattern, resolveUnpackPattern } = require('../voyager_engine');
+    const patternSample1 = detectUnpackDirPattern(['node_modules/chrome-devtools-mcp']);
+    const patternSample2 = detectUnpackDirPattern(['node_modules/chrome-devtools-mcp/LICENSE']);
+    const patternSample3 = detectUnpackDirPattern(['node_modules/chrome-devtools-mcp/build/index.js']);
+    check('2级目录精准匹配: node_modules/chrome-devtools-mcp -> node_modules/chrome-devtools-mcp*', patternSample1 === 'node_modules/chrome-devtools-mcp*');
+    check('3级文件精准匹配: node_modules/chrome-devtools-mcp/LICENSE -> node_modules/chrome-devtools-mcp*', patternSample2 === 'node_modules/chrome-devtools-mcp*');
+    check('4级深度文件精准匹配: node_modules/chrome-devtools-mcp/build/index.js -> node_modules/chrome-devtools-mcp*', patternSample3 === 'node_modules/chrome-devtools-mcp*');
+    check('严防通配泛化: 绝不生成全局 node_modules* 规则', !patternSample1.includes('node_modules*') && patternSample1 !== 'node_modules*');
+
+    if (fs.existsSync('/Applications/Antigravity.app/Contents/Resources/app.asar')) {
+      const realPattern = resolveUnpackPattern('/Applications/Antigravity.app/Contents/Resources/app.asar');
+      check('真实应用解析契约绝对免疫全局 node_modules*', realPattern === 'node_modules/chrome-devtools-mcp*');
+    }
+  }
+
   console.log('\n========================================');
   console.log(`ENGINE TESTS: ${pass} passed, ${fail} failed`);
   if (fail) {
