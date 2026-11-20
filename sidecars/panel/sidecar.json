@@ -1,0 +1,21 @@
+{
+  "command": "node",
+  "args": [
+    "--max-old-space-size=128",
+    "main.mjs"
+  ],
+  "restart_policy": "always",
+  "display_name": "Antigravity LaTeX Enhancer",
+  "description": "Non-invasive KaTeX centering, anti-crowding spacing, one-click LaTeX copy, and Markdown selection restoration via CDP",
+  "has_web_ui": true,
+  "ui_config": {
+    "display_name": "LaTeX Enhancer",
+    "views": [
+      {
+        "path": "/",
+        "entrypoint": "SIDECAR_UI_ENTRYPOINT_AUX_PANE",
+        "title": "LaTeX Enhancer"
+      }
+    ]
+  }
+}

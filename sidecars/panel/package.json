@@ -1,0 +1,12 @@
+{
+  "name": "antigravity-latex-enhancer-panel",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node main.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "version": "3.0.0"
+}

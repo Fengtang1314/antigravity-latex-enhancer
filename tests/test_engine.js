@@ -6,7 +6,7 @@ const crypto = require('crypto');
 
 const REPO = path.resolve(__dirname, '..');
 const BASE = path.join(__dirname, 'fixtures');
-const ENGINE_SRC = path.join(REPO, 'voyager_engine.js');
+const ENGINE_SRC = path.join(REPO, 'legacy', 'voyager_engine.js');
 const asarPath = path.join(REPO, 'node_modules', '@electron', 'asar');
 
 let pass = 0, fail = 0;
@@ -250,7 +250,7 @@ function run(root, mode, env = {}) {
 
   console.log('\n=== E13 asarUnpack pattern precision & electron-log protection ===');
   {
-    const { detectUnpackDirPattern, resolveUnpackPattern } = require('../voyager_engine');
+    const { detectUnpackDirPattern, resolveUnpackPattern } = require('../legacy/voyager_engine');
     const patternSample1 = detectUnpackDirPattern(['node_modules/chrome-devtools-mcp']);
     const patternSample2 = detectUnpackDirPattern(['node_modules/chrome-devtools-mcp/LICENSE']);
     const patternSample3 = detectUnpackDirPattern(['node_modules/chrome-devtools-mcp/build/index.js']);

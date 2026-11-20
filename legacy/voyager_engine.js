@@ -30,7 +30,7 @@ async function getAsar() {
         cachedAsar = await import('@electron/asar');
         return cachedAsar;
     } catch (e) {
-        const localPath = path.join(__dirname, 'node_modules', '@electron', 'asar', 'lib', 'asar.js');
+        const localPath = path.join(__dirname, '..', 'node_modules', '@electron', 'asar', 'lib', 'asar.js');
         if (fs.existsSync(localPath)) {
             cachedAsar = await import(localPath);
             return cachedAsar;
@@ -423,7 +423,7 @@ async function install(appPath) {
     console.log(`[注入] 正在向 preload.js 注入 Voyager LaTeX 增强代码...`);
     preloadContent = cleanVoyagerBlock(preloadContent);
 
-    const payloadPath = path.join(__dirname, 'payload', 'voyager-latex.js');
+    const payloadPath = path.join(__dirname, '..', 'payload', 'voyager-latex.js');
     if (!fs.existsSync(payloadPath)) {
         console.error(`[错误] 未找到 payload/voyager-latex.js 核心代码文件`);
         fs.rmSync(tempDir, { recursive: true, force: true });
