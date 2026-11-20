@@ -1,15 +1,18 @@
 {
   "name": "antigravity-latex-enhancer",
-  "version": "2.3.2",
-  "description": "Antigravity Voyager LaTeX Enhancer for macOS",
-  "main": "voyager_engine.js",
+  "version": "3.0.0",
+  "description": "Non-invasive Antigravity LaTeX Enhancer (User-space Sidecar + CDP)",
+  "main": "manage.mjs",
   "scripts": {
-    "test": "node tests/run_all.js"
+    "test": "node tests/run_all.js",
+    "install-plugin": "node manage.mjs install",
+    "uninstall-plugin": "node manage.mjs uninstall",
+    "status": "node manage.mjs status"
   },
   "engines": {
     "node": ">=22.12.0"
   },
-  "dependencies": {
+  "optionalDependencies": {
     "@electron/asar": "4.3.1"
   },
   "devDependencies": {

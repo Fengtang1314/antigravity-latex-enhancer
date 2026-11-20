@@ -4,6 +4,23 @@
 
 ---
 
+## [3.0.0] - 2026-11-20
+
+### 🚀 架构重构：无侵入用户态 Sidecar + 本地 CDP 动态注入
+- **彻底告别 `app.asar` 修改与重签名**：
+  - 迁移至 `~/.gemini/config/plugins/antigravity-latex-enhancer/` 用户态 Sidecar 插件架构，完全保留 `/Applications/Antigravity.app` 官方签名与 `app.asar` 完整性，不再需要 `sudo`，不再被客户端自动更新覆盖；
+  - 复用共享 `<profile>/DevToolsActivePort` 进行轻量级本地 CDP 注入（精确过滤 Antigravity 主 `page` target，不注入第三方本地预览页），不实现自动杀端重启，与 `antigravity-pulse`（`Antigravity (Debug).app`）零冲突协同工作。
+- **零外部依赖生命周期管理（`manage.mjs`）**：
+  - 提供 `install / uninstall / enable / disable / status` 全套纯 Node.js ESM 管理命令及免 `sudo` 双击 `.command` 脚本；
+  - 支持热启停与自动检测旧版 `app.asar` 注入残留；原 `voyager_engine.js` 归档至 `legacy/voyager_engine.js`。
+- **前端 Payload（`payload/voyager-latex.js`）全面升级**：
+  - 新增版本校验与 `window.__VOYAGER_LATEX_DISPOSE__()` 完整清理生命周期（样式、ShadowRoot 观察器、`rAF`/定时器、事件监听全量回收）；
+  - 彻底消除 `innerHTML` 用法（改用 `replaceChildren()`），完整兼容 Trusted Types；
+  - 修复超宽公式 `inline-block` vs `inline-flex` CSS 冲突，新增浅色/深色主题与宿主 CSS 变量自适应；
+  - 升级为增量子树扫描、实时重读最新 `annotation`、表格单元格制表符分隔复制与双向堆叠间距检测。
+
+---
+
 ## [2.3.1] - 2026-10-18
 
 ### 🐛 缺陷修复与自愈消肿阈值放行 (Patch)

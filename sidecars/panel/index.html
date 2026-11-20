@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Antigravity LaTeX Enhancer</title>
+  <script src="/preload.js"></script>
+  <script defer src="/app.js"></script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #FAF9F5;
+      --card: #FFFFFF;
+      --fg: #141413;
+      --muted: #6E6B64;
+      --border: rgba(20, 20, 19, 0.10);
+      --accent: #D97757;
+      --ok: #2E7D32;
+      --warn: #B26A00;
+      --err: #C62828;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141413;
+        --card: #1E1D1B;
+        --fg: #ECEAE4;
+        --muted: #A19E95;
+        --border: rgba(255, 255, 255, 0.10);
+        --ok: #66BB6A;
+        --warn: #FFB74D;
+        --err: #EF5350;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 14px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .title {
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+    }
+    .badge[data-state="injected"] { color: var(--ok); border-color: rgba(46, 125, 50, 0.35); }
+    .badge[data-state="waiting-debug-port"],
+    .badge[data-state="reconnecting"] { color: var(--warn); border-color: rgba(178, 106, 0, 0.35); }
+    .badge[data-state="disabled"] { color: var(--muted); }
+    dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px 12px;
+      font-size: 12px;
+    }
+    dt { color: var(--muted); }
+    dd { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+    .message {
+      margin-top: 12px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      appearance: none;
+      border: 1px solid rgba(217, 119, 87, 0.45);
+      background: rgba(217, 119, 87, 0.10);
+      color: var(--fg);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    button:hover { background: rgba(217, 119, 87, 0.20); }
+    button:disabled { opacity: 0.5; cursor: default; }
+  </style>
+</head>
+<body>
+  <section class="card">
+    <div class="header">
+      <div class="title">
+        <span>∑ Antigravity LaTeX Enhancer</span>
+      </div>
+      <span class="badge" id="state-badge" data-state="waiting">waiting</span>
+    </div>
+    <dl>
+      <dt>运行模式</dt><dd id="mode-val">sidecar-cdp</dd>
+      <dt>注入窗口</dt><dd id="windows-val">—</dd>
+      <dt>调试端口</dt><dd id="port-val">—</dd>
+      <dt>载荷版本</dt><dd id="version-val">—</dd>
+      <dt>最近检查</dt><dd id="checked-val">—</dd>
+    </dl>
+    <div class="message" id="status-msg">正在连接状态接口…</div>
+    <div class="actions">
+      <button id="reinject-btn" type="button">重新注入页面</button>
+    </div>
+  </section>
+</body>
+</html>

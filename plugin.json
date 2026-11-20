@@ -1,0 +1,7 @@
+{
+  "name": "antigravity-latex-enhancer",
+  "display_name": "Antigravity LaTeX Enhancer",
+  "description": "Non-invasive KaTeX centering, anti-crowding spacing, one-click LaTeX copy, and Markdown selection restoration via user-space Sidecar & CDP.",
+  "version": "3.0.0",
+  "logo": "assets/logo.svg"
+}
